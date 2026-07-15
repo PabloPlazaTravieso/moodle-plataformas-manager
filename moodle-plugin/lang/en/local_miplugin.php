@@ -1,0 +1,23 @@
+<?php
+$string['pluginname'] = 'Mi Plugin';
+$string['miplugin:viewsiteinfo'] = 'View platform information via web service';
+$string['miplugin:viewcourses'] = 'View platform courses via web service';
+$string['miplugin:viewusers'] = 'View platform users via web service';
+$string['miplugin:viewlog'] = 'View the platform manager activity log';
+$string['miplugin:managenotes'] = 'Add notes to courses via the platform manager';
+$string['activitylog'] = 'Activity log';
+$string['notesforcourse'] = 'Notes for {$a}';
+$string['notecontent'] = 'Note';
+$string['addnote'] = 'Add note';
+$string['backtolog'] = 'Back to activity log';
+$string['logaction'] = 'Action';
+$string['logdetails'] = 'Details';
+$string['loguser'] = 'User';
+$string['logdate'] = 'Date';
+$string['nologentries'] = 'No activity yet.';
+$string['nonotes'] = 'No notes yet.';
+$string['lognoteadded'] = 'Note added to course "{$a}"';
+$string['lognotedeleted'] = 'Note deleted';
+$string['logimageset'] = 'Course image updated for course "{$a}"';
+$string['deletenote'] = 'Delete note';
+$string['confirmdeletenote'] = 'Are you sure you want to delete this note?';
