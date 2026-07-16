@@ -102,6 +102,13 @@ export interface MoodleUser {
   suspended: boolean;
   confirmed: boolean;
   lastaccess: number;
+  roles: string[];
+}
+
+export interface LogEntry {
+  action: string;
+  details: string;
+  timecreated: number;
 }
 
 export interface CourseCategory {
@@ -193,6 +200,16 @@ export function enrolUser(courseId: number, userId: number) {
   return callMoodle<null>("enrol_manual_enrol_users", {
     enrolments: [{ roleid: roleId, userid: userId, courseid: courseId }],
   });
+}
+
+export function unenrolUser(courseId: number, userId: number) {
+  return callMoodle<null>("enrol_manual_unenrol_users", {
+    enrolments: [{ userid: userId, courseid: courseId }],
+  });
+}
+
+export function getActivityLog(limit = 500) {
+  return callMoodle<{ entries: LogEntry[] }>("local_miplugin_get_activity_log", { limit }).then((r) => r.entries);
 }
 
 /**

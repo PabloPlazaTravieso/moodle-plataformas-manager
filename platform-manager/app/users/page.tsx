@@ -56,7 +56,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
   if (editing) {
     return (
       <tr>
-        <td colSpan={5} className="px-4 py-3">
+        <td colSpan={6} className="px-4 py-3">
           <form onSubmit={handleSave} className="flex flex-wrap items-center gap-2">
             <input
               className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
@@ -108,6 +108,15 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
         {user.firstname} {user.lastname}
       </td>
       <td className="px-4 py-2">{user.email}</td>
+      <td className="px-4 py-2">
+        {user.roles.length > 0 ? (
+          <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+            {user.roles.join(", ")}
+          </span>
+        ) : (
+          <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+        )}
+      </td>
       <td className="px-4 py-2">
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -299,6 +308,7 @@ export default function UsersPage() {
                 <th className="px-4 py-2">Usuario</th>
                 <th className="px-4 py-2">Nombre</th>
                 <th className="px-4 py-2">Email</th>
+                <th className="px-4 py-2">Rol</th>
                 <th className="px-4 py-2">Confirmado</th>
                 <th className="px-4 py-2"></th>
               </tr>
@@ -309,7 +319,7 @@ export default function UsersPage() {
               ))}
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
                     {search ? "Ningún usuario coincide con la búsqueda." : "No hay usuarios todavía."}
                   </td>
                 </tr>

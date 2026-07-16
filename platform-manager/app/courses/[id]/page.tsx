@@ -77,6 +77,24 @@ export default function CourseDetailPage() {
     await loadData();
   }
 
+  async function handleUnenrol(userId: number, name: string) {
+    if (!confirm(`¿Desmatricular a ${name} de este curso?`)) {
+      return;
+    }
+
+    const response = await fetch(`/api/courses/${courseId}/enrollments?userid=${userId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      alert(data.error ?? "Error al desmatricular al alumno");
+      return;
+    }
+
+    await loadData();
+  }
+
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -188,6 +206,7 @@ export default function CourseDetailPage() {
               <th className="px-4 py-2">Nombre</th>
               <th className="px-4 py-2">Email</th>
               <th className="px-4 py-2">Rol</th>
+              <th className="px-4 py-2"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
@@ -198,11 +217,19 @@ export default function CourseDetailPage() {
                 </td>
                 <td className="px-4 py-2">{user.email}</td>
                 <td className="px-4 py-2">{user.roles.map((r) => r.shortname).join(", ")}</td>
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => handleUnenrol(user.id, `${user.firstname} ${user.lastname}`)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Desmatricular
+                  </button>
+                </td>
               </tr>
             ))}
             {enrolled.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
                   Nadie matriculado todavía.
                 </td>
               </tr>

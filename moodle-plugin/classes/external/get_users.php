@@ -62,8 +62,31 @@ class get_users extends external_api {
             'id, username, email, firstname, lastname, suspended, confirmed, lastaccess'
         );
 
+        // Fetch every system- and course-level role assignment in a single query (avoids one
+        // query per user). Admin status isn't a role assignment at all in Moodle (it lives in
+        // $CFG->siteadmins), so it's added separately below.
+        $rolesbyuser = [];
+        $roleassignments = $DB->get_records_sql(
+            "SELECT ra.id, ra.userid, r.shortname
+               FROM {role_assignments} ra
+               JOIN {role} r ON r.id = ra.roleid
+               JOIN {context} ctx ON ctx.id = ra.contextid
+              WHERE ctx.contextlevel IN (:syslevel, :courselevel)",
+            ['syslevel' => CONTEXT_SYSTEM, 'courselevel' => CONTEXT_COURSE]
+        );
+        foreach ($roleassignments as $ra) {
+            $rolesbyuser[$ra->userid][$ra->shortname] = true;
+        }
+
+        $adminids = array_flip(explode(',', $CFG->siteadmins));
+
         $result = [];
         foreach ($users as $user) {
+            $roles = array_keys($rolesbyuser[$user->id] ?? []);
+            if (isset($adminids[$user->id])) {
+                array_unshift($roles, 'admin');
+            }
+
             $result[] = [
                 'id' => (int) $user->id,
                 'username' => $user->username,
@@ -73,6 +96,7 @@ class get_users extends external_api {
                 'suspended' => (bool) $user->suspended,
                 'confirmed' => (bool) $user->confirmed,
                 'lastaccess' => (int) $user->lastaccess,
+                'roles' => $roles,
             ];
         }
 
@@ -96,6 +120,10 @@ class get_users extends external_api {
                     'suspended' => new external_value(PARAM_BOOL, 'Whether the account is suspended'),
                     'confirmed' => new external_value(PARAM_BOOL, 'Whether the account is confirmed'),
                     'lastaccess' => new external_value(PARAM_INT, 'Last access to the site (timestamp), 0 if never'),
+                    'roles' => new external_multiple_structure(
+                        new external_value(PARAM_ALPHANUMEXT, 'Role shortname'),
+                        '"admin" if a site administrator, plus any system- or course-level role shortnames'
+                    ),
                 ])
             ),
         ]);

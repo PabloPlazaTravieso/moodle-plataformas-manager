@@ -1,4 +1,5 @@
-import { getSiteInfo } from "@/lib/moodle";
+import { getActivityLog, getSiteInfo } from "@/lib/moodle";
+import { ActivityCharts } from "./activity-charts";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -12,6 +13,7 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 export default async function DashboardPage() {
   let error: string | null = null;
   let info: Awaited<ReturnType<typeof getSiteInfo>> | null = null;
+  let logEntries: Awaited<ReturnType<typeof getActivityLog>> = [];
 
   try {
     info = await getSiteInfo();
@@ -19,8 +21,14 @@ export default async function DashboardPage() {
     error = e instanceof Error ? e.message : "Error desconocido al conectar con Moodle";
   }
 
+  try {
+    logEntries = await getActivityLog();
+  } catch {
+    // Non-critical: the dashboard still works without the charts.
+  }
+
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
+    <div className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-slate-100">Dashboard</h1>
 
       {error && (
@@ -34,12 +42,15 @@ export default async function DashboardPage() {
           <p className="mb-6 text-slate-600 dark:text-slate-400">
             {info.fullname} ({info.shortname}) — {info.release}
           </p>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard label="Usuarios" value={info.usercount} />
             <StatCard label="Cursos" value={info.coursecount} />
             <StatCard label="Versión" value={info.version} />
             <StatCard label="Release" value={info.release} />
           </div>
+
+          <h2 className="mb-4 text-lg font-medium text-slate-900 dark:text-slate-100">Actividad reciente</h2>
+          <ActivityCharts entries={logEntries} />
         </>
       )}
     </div>

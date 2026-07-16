@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { enrolUser, getEnrolledUsers, MoodleError } from "@/lib/moodle";
+import { enrolUser, getEnrolledUsers, unenrolUser, MoodleError } from "@/lib/moodle";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -22,6 +22,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ ok: true });
   } catch (e) {
     const message = e instanceof MoodleError ? e.message : "Error al matricular al alumno";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const userid = request.nextUrl.searchParams.get("userid");
+
+  if (!userid) {
+    return NextResponse.json({ error: "Falta el parámetro userid" }, { status: 400 });
+  }
+
+  try {
+    await unenrolUser(Number(id), Number(userid));
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    const message = e instanceof MoodleError ? e.message : "Error al desmatricular al alumno";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

@@ -57,6 +57,14 @@ $functions = [
         'ajax'          => false,
         'capabilities'  => 'moodle/course:update',
     ],
+    'local_miplugin_get_activity_log' => [
+        'classname'     => 'local_miplugin\external\get_activity_log',
+        'methodname'    => 'execute',
+        'description'   => 'Returns the platform manager activity log entries.',
+        'type'          => 'read',
+        'ajax'          => false,
+        'capabilities'  => 'local/miplugin:viewlog',
+    ],
 ];
 
 $services = [
@@ -74,7 +82,9 @@ $services = [
             'core_user_delete_users',
             'core_enrol_get_enrolled_users',
             'enrol_manual_enrol_users',
+            'enrol_manual_unenrol_users',
             'local_miplugin_set_course_image',
+            'local_miplugin_get_activity_log',
         ],
         'restrictedusers' => 0,
         'enabled'         => 1,
