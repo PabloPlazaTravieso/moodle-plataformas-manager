@@ -16,8 +16,6 @@
 
 namespace local_miplugin\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_miplugin\local\notes_manager;
 
 /**
@@ -31,7 +29,6 @@ use local_miplugin\local\notes_manager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mobile {
-
     /**
      * Returns the "Platform manager notes" course view for the Moodle App.
      *

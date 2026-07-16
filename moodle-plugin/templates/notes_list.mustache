@@ -20,7 +20,7 @@
     Renders the list of notes attached to a course.
 
     Context variables required for this template:
-    * notes - array of {id, content, userfullname, timecreated}
+    * notes - array of {id, content, userfullname, timecreated, editurl}
 }}
 <ul class="list-group">
     {{#notes}}
@@ -29,14 +29,19 @@
             <p class="mb-1">{{content}}</p>
             <small class="text-muted">{{userfullname}} &middot; {{timecreated}}</small>
         </div>
-        <button
-            type="button"
-            class="btn btn-sm btn-outline-danger ms-3"
-            data-action="delete-note"
-            data-note-id="{{id}}"
-        >
-            {{#str}} deletenote, local_miplugin {{/str}}
-        </button>
+        <div class="ms-3 text-nowrap">
+            <a href="{{editurl}}" class="btn btn-sm btn-outline-secondary">
+                {{#str}} editnote, local_miplugin {{/str}}
+            </a>
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                data-action="delete-note"
+                data-note-id="{{id}}"
+            >
+                {{#str}} deletenote, local_miplugin {{/str}}
+            </button>
+        </div>
     </li>
     {{/notes}}
     {{^notes}}

@@ -25,7 +25,6 @@ namespace local_miplugin\local;
  * @covers     \local_miplugin\local\notes_manager
  */
 final class notes_manager_test extends \advanced_testcase {
-
     /**
      * A note can be added to a course and retrieved afterwards.
      */
@@ -88,13 +87,19 @@ final class notes_manager_test extends \advanced_testcase {
     public function test_add_note_with_log_writes_both(): void {
         $this->resetAfterTest();
 
+        // Creating the course itself triggers the course_created observer, adding one log entry.
         $course = $this->getDataGenerator()->create_course();
         $user = $this->getDataGenerator()->create_user();
+
+        $logbefore = notes_manager::count_log();
 
         notes_manager::add_note_with_log($course->id, $user->id, 'Some content', 'note_added', 'Some details');
 
         $this->assertCount(1, notes_manager::get_notes_for_course($course->id));
-        $this->assertCount(1, notes_manager::get_recent_log());
+        $this->assertSame($logbefore + 1, notes_manager::count_log());
+
+        $log = array_values(notes_manager::get_recent_log());
+        $this->assertSame('note_added', $log[0]->action);
     }
 
     /**
@@ -173,5 +178,68 @@ final class notes_manager_test extends \advanced_testcase {
         $this->assertCount(1, $remaining);
         $this->assertSame($keepid, (int) reset($remaining)->id);
         $this->assertFalse(notes_manager::get_note($deleteid));
+    }
+
+    /**
+     * update_note() changes the content without changing the id or course.
+     */
+    public function test_update_note(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+
+        $noteid = notes_manager::add_note($course->id, $user->id, 'Original content');
+        notes_manager::update_note($noteid, 'Updated content');
+
+        $note = notes_manager::get_note($noteid);
+
+        $this->assertSame('Updated content', $note->content);
+        $this->assertEquals($course->id, $note->courseid);
+    }
+
+    /**
+     * delete_notes_older_than() only removes notes past the cutoff, and returns the count deleted.
+     */
+    public function test_delete_notes_older_than(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+
+        $oldid = notes_manager::add_note($course->id, $user->id, 'Old note');
+        $DB->set_field('local_miplugin_notes', 'timecreated', time() - (400 * DAYSECS), ['id' => $oldid]);
+
+        $recentid = notes_manager::add_note($course->id, $user->id, 'Recent note');
+
+        $deleted = notes_manager::delete_notes_older_than(365);
+
+        $this->assertSame(1, $deleted);
+        $this->assertFalse(notes_manager::get_note($oldid));
+        $this->assertNotFalse(notes_manager::get_note($recentid));
+    }
+
+    /**
+     * get_recent_log() supports pagination via limit/offset, and count_log() returns the total.
+     */
+    public function test_log_pagination(): void {
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+
+        for ($i = 1; $i <= 3; $i++) {
+            notes_manager::add_log($user->id, "action_{$i}", "Details {$i}");
+        }
+
+        $this->assertSame(3, notes_manager::count_log());
+
+        $firstpage = array_values(notes_manager::get_recent_log(2, 0));
+        $secondpage = array_values(notes_manager::get_recent_log(2, 2));
+
+        $this->assertCount(2, $firstpage);
+        $this->assertCount(1, $secondpage);
+        $this->assertSame('action_3', $firstpage[0]->action);
+        $this->assertSame('action_1', $secondpage[0]->action);
     }
 }

@@ -28,21 +28,25 @@ require_once($CFG->libdir . '/formslib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class note_form extends \moodleform {
-
     /**
      * Form definition.
      */
     public function definition() {
         $mform = $this->_form;
+        $editing = !empty($this->_customdata['noteid']);
 
         $mform->addElement('hidden', 'courseid');
         $mform->setType('courseid', PARAM_INT);
+
+        $mform->addElement('hidden', 'noteid');
+        $mform->setType('noteid', PARAM_INT);
 
         $mform->addElement('textarea', 'content', get_string('notecontent', 'local_miplugin'), ['rows' => 4]);
         $mform->setType('content', PARAM_TEXT);
         $mform->addRule('content', get_string('required'), 'required', null, 'client');
 
-        $this->add_action_buttons(false, get_string('addnote', 'local_miplugin'));
+        $label = $editing ? get_string('savechanges') : get_string('addnote', 'local_miplugin');
+        $this->add_action_buttons(false, $label);
     }
 
     /**

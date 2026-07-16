@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Event observers for local_miplugin.
  *
  * @package    local_miplugin
  * @copyright  2026 Pablo Plaza
@@ -24,7 +24,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_miplugin';
-$plugin->version   = 2026071402;
-$plugin->requires  = 2024100700;
-$plugin->maturity  = MATURITY_ALPHA;
+$observers = [
+    [
+        'eventname' => '\core\event\course_created',
+        'callback'  => '\local_miplugin\observer::course_created',
+        'internal'  => false,
+    ],
+    [
+        'eventname' => '\core\event\user_enrolment_created',
+        'callback'  => '\local_miplugin\observer::user_enrolment_created',
+        'internal'  => false,
+    ],
+];

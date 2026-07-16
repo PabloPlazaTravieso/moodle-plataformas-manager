@@ -16,8 +16,6 @@
 
 namespace local_miplugin\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Renderer for local_miplugin.
  *
@@ -26,7 +24,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends \plugin_renderer_base {
-
     /**
      * Renders the activity log table.
      *
@@ -63,9 +60,10 @@ class renderer extends \plugin_renderer_base {
      * notes_manager::get_notes_with_details(), so no per-row queries are needed here.
      *
      * @param array $notes records with userfullname/coursefullname already joined in
+     * @param int $courseid used to build the "edit" link for each note
      * @return string
      */
-    public function render_notes(array $notes): string {
+    public function render_notes(array $notes, int $courseid): string {
         $context = ['notes' => []];
         foreach ($notes as $note) {
             $context['notes'][] = [
@@ -73,6 +71,10 @@ class renderer extends \plugin_renderer_base {
                 'content' => format_text($note->content, FORMAT_PLAIN),
                 'userfullname' => $note->userfullname,
                 'timecreated' => userdate($note->timecreated),
+                'editurl' => (new \moodle_url('/local/miplugin/index.php', [
+                    'courseid' => $courseid,
+                    'editnote' => $note->id,
+                ]))->out(false),
             ];
         }
 

@@ -32,7 +32,6 @@ use local_miplugin\local\notes_manager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class set_course_image extends external_api {
-
     /**
      * Describes the parameters for execute.
      *

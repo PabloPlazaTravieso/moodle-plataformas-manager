@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_miplugin\local\notes_manager;
 
 /**
@@ -53,5 +51,5 @@ function local_miplugin_output_fragment_notes_list(array $args): string {
 
     $renderer = $PAGE->get_renderer('local_miplugin');
 
-    return $renderer->render_notes(notes_manager::get_notes_with_details($courseid));
+    return $renderer->render_notes(notes_manager::get_notes_with_details($courseid), $courseid);
 }

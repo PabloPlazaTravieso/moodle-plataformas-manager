@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Scheduled task definitions for local_miplugin.
  *
  * @package    local_miplugin
  * @copyright  2026 Pablo Plaza
@@ -24,7 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_miplugin';
-$plugin->version   = 2026071402;
-$plugin->requires  = 2024100700;
-$plugin->maturity  = MATURITY_ALPHA;
+$tasks = [
+    [
+        'classname' => '\local_miplugin\task\cleanup_old_notes',
+        'blocking'  => 0,
+        'minute'    => '0',
+        'hour'      => '3',
+        'day'       => '*',
+        'month'     => '*',
+        'dayofweek' => '*',
+    ],
+];

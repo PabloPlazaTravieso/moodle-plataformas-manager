@@ -24,7 +24,6 @@ namespace local_miplugin\local;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class notes_manager {
-
     /**
      * Adds a note to a course.
      *
@@ -57,6 +56,22 @@ class notes_manager {
     }
 
     /**
+     * Updates the content of an existing note.
+     *
+     * @param int $noteid
+     * @param string $content
+     * @return void
+     */
+    public static function update_note(int $noteid, string $content): void {
+        global $DB;
+
+        $DB->update_record('local_miplugin_notes', (object) [
+            'id' => $noteid,
+            'content' => $content,
+        ]);
+    }
+
+    /**
      * Deletes a note by id.
      *
      * @param int $noteid
@@ -66,6 +81,23 @@ class notes_manager {
         global $DB;
 
         $DB->delete_records('local_miplugin_notes', ['id' => $noteid]);
+    }
+
+    /**
+     * Deletes notes older than the given number of days. Used by the
+     * cleanup_old_notes scheduled task.
+     *
+     * @param int $days
+     * @return int number of notes deleted
+     */
+    public static function delete_notes_older_than(int $days): int {
+        global $DB;
+
+        $cutoff = time() - ($days * DAYSECS);
+        $count = $DB->count_records_select('local_miplugin_notes', 'timecreated < :cutoff', ['cutoff' => $cutoff]);
+        $DB->delete_records_select('local_miplugin_notes', 'timecreated < :cutoff', ['cutoff' => $cutoff]);
+
+        return $count;
     }
 
     /**
@@ -100,15 +132,27 @@ class notes_manager {
     }
 
     /**
-     * Returns the most recent activity log entries.
+     * Returns a page of activity log entries, most recent first.
      *
      * @param int $limit
+     * @param int $offset
      * @return array
      */
-    public static function get_recent_log(int $limit = 20): array {
+    public static function get_recent_log(int $limit = 20, int $offset = 0): array {
         global $DB;
 
-        return $DB->get_records('local_miplugin_log', null, 'timecreated DESC, id DESC', '*', 0, $limit);
+        return $DB->get_records('local_miplugin_log', null, 'timecreated DESC, id DESC', '*', $offset, $limit);
+    }
+
+    /**
+     * Returns the total number of activity log entries, used to build the pager.
+     *
+     * @return int
+     */
+    public static function count_log(): int {
+        global $DB;
+
+        return $DB->count_records('local_miplugin_log');
     }
 
     /**
