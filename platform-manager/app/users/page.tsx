@@ -6,6 +6,136 @@ import { PasswordInput } from "../password-input";
 
 const PAGE_SIZE = 8;
 
+function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [firstname, setFirstname] = useState(user.firstname);
+  const [lastname, setLastname] = useState(user.lastname);
+  const [email, setEmail] = useState(user.email);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave(event: React.FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    const response = await fetch(`/api/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ firstname, lastname, email }),
+    });
+    const data = await response.json();
+
+    setSaving(false);
+
+    if (!response.ok) {
+      setError(data.error ?? "Error al actualizar el usuario");
+      return;
+    }
+
+    setEditing(false);
+    onChanged();
+  }
+
+  async function handleDelete() {
+    if (!confirm(`¿Borrar el usuario "${user.username}"? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    const response = await fetch(`/api/users/${user.id}`, { method: "DELETE" });
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error ?? "Error al borrar el usuario");
+      return;
+    }
+
+    onChanged();
+  }
+
+  if (editing) {
+    return (
+      <tr>
+        <td colSpan={5} className="px-4 py-3">
+          <form onSubmit={handleSave} className="flex flex-wrap items-center gap-2">
+            <input
+              className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+              value={firstname}
+              onChange={(e) => setFirstname(e.target.value)}
+              placeholder="Nombre"
+              required
+            />
+            <input
+              className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+              value={lastname}
+              onChange={(e) => setLastname(e.target.value)}
+              placeholder="Apellidos"
+              required
+            />
+            <input
+              type="email"
+              className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              required
+            />
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-md bg-slate-900 px-3 py-1 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+            >
+              {saving ? "Guardando..." : "Guardar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="rounded-md border border-slate-300 px-3 py-1 text-sm dark:border-slate-700"
+            >
+              Cancelar
+            </button>
+            {error && <p className="w-full text-sm text-red-600">{error}</p>}
+          </form>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <tr>
+      <td className="px-4 py-2">{user.username}</td>
+      <td className="px-4 py-2">
+        {user.firstname} {user.lastname}
+      </td>
+      <td className="px-4 py-2">{user.email}</td>
+      <td className="px-4 py-2">
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+            user.confirmed
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+              : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+          }`}
+        >
+          {user.confirmed ? "Sí" : "No"}
+        </span>
+      </td>
+      <td className="px-4 py-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setEditing(true)}
+            className="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          >
+            Editar
+          </button>
+          <button onClick={handleDelete} className="text-sm text-red-600 hover:text-red-800">
+            Borrar
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState<MoodleUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,32 +300,16 @@ export default function UsersPage() {
                 <th className="px-4 py-2">Nombre</th>
                 <th className="px-4 py-2">Email</th>
                 <th className="px-4 py-2">Confirmado</th>
+                <th className="px-4 py-2"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
               {pageUsers.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-4 py-2">{user.username}</td>
-                  <td className="px-4 py-2">
-                    {user.firstname} {user.lastname}
-                  </td>
-                  <td className="px-4 py-2">{user.email}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        user.confirmed
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                          : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                      }`}
-                    >
-                      {user.confirmed ? "Sí" : "No"}
-                    </span>
-                  </td>
-                </tr>
+                <UserRow key={user.id} user={user} onChanged={loadUsers} />
               ))}
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
                     {search ? "Ningún usuario coincide con la búsqueda." : "No hay usuarios todavía."}
                   </td>
                 </tr>

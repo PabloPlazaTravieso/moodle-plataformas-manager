@@ -25,6 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_miplugin';
-$plugin->version   = 2026071402;
+$plugin->version   = 2026071403;
 $plugin->requires  = 2024100700;
 $plugin->maturity  = MATURITY_ALPHA;

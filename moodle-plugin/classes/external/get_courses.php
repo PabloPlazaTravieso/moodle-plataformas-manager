@@ -69,7 +69,7 @@ class get_courses extends external_api {
             $imageurl = null;
             $files = $fs->get_area_files($coursecontext->id, 'course', 'overviewfiles', 0, 'sortorder', false);
             foreach ($files as $file) {
-                if ($file->is_valid_image()) {
+                if (str_starts_with($file->get_mimetype() ?? '', 'image/')) {
                     $imageurl = \moodle_url::make_webservice_pluginfile_url(
                         $file->get_contextid(),
                         $file->get_component(),

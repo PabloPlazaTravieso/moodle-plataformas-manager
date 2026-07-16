@@ -14,29 +14,136 @@ const PLACEHOLDER_GRADIENTS = [
   "from-rose-400 to-pink-600",
 ];
 
-function CourseCard({ course, categoryName }: { course: Course; categoryName: string }) {
+function CourseCard({
+  course,
+  categoryName,
+  categories,
+  onChanged,
+}: {
+  course: Course;
+  categoryName: string;
+  categories: CourseCategory[];
+  onChanged: () => void;
+}) {
   const gradient = PLACEHOLDER_GRADIENTS[course.id % PLACEHOLDER_GRADIENTS.length];
 
-  return (
-    <Link
-      href={`/courses/${course.id}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
-    >
-      {course.imageurl ? (
-        // eslint-disable-next-line @next/next/no-img-element -- external Moodle image proxied through our own API
-        <img
-          src={`/api/courses/${course.id}/image`}
-          alt=""
-          className="h-32 w-full object-cover"
+  const [editing, setEditing] = useState(false);
+  const [fullname, setFullname] = useState(course.fullname);
+  const [shortname, setShortname] = useState(course.shortname);
+  const [categoryid, setCategoryid] = useState(String(course.categoryid));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave(event: React.FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    const response = await fetch(`/api/courses/${course.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullname, shortname, categoryid }),
+    });
+    const data = await response.json();
+
+    setSaving(false);
+
+    if (!response.ok) {
+      setError(data.error ?? "Error al actualizar el curso");
+      return;
+    }
+
+    setEditing(false);
+    onChanged();
+  }
+
+  async function handleDelete() {
+    if (!confirm(`¿Borrar el curso "${course.fullname}"? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    const response = await fetch(`/api/courses/${course.id}`, { method: "DELETE" });
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error ?? "Error al borrar el curso");
+      return;
+    }
+
+    onChanged();
+  }
+
+  if (editing) {
+    return (
+      <form
+        onSubmit={handleSave}
+        className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      >
+        <input
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          value={fullname}
+          onChange={(e) => setFullname(e.target.value)}
+          placeholder="Nombre completo"
+          required
         />
-      ) : (
-        <div className={`flex h-32 w-full items-center justify-center bg-gradient-to-br ${gradient} text-2xl font-semibold text-white/90`}>
-          {course.shortname.slice(0, 2).toUpperCase()}
+        <input
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          value={shortname}
+          onChange={(e) => setShortname(e.target.value)}
+          placeholder="Nombre corto"
+          required
+        />
+        <select
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          value={categoryid}
+          onChange={(e) => setCategoryid(e.target.value)}
+        >
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <div className="mt-1 flex gap-2">
+          <button
+            type="submit"
+            disabled={saving}
+            className="flex-1 rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+          >
+            {saving ? "Guardando..." : "Guardar"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
+          >
+            Cancelar
+          </button>
         </div>
-      )}
+      </form>
+    );
+  }
+
+  return (
+    <div className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+      <Link href={`/courses/${course.id}`}>
+        {course.imageurl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- external Moodle image proxied through our own API
+          <img
+            src={`/api/courses/${course.id}/image`}
+            alt=""
+            className="h-32 w-full object-cover"
+          />
+        ) : (
+          <div className={`flex h-32 w-full items-center justify-center bg-gradient-to-br ${gradient} text-2xl font-semibold text-white/90`}>
+            {course.shortname.slice(0, 2).toUpperCase()}
+          </div>
+        )}
+      </Link>
 
       <div className="flex flex-1 flex-col justify-between p-5">
-        <div>
+        <Link href={`/courses/${course.id}`}>
           <div className="mb-2 flex items-start justify-between gap-2">
             <h3 className="font-medium text-slate-900 group-hover:text-slate-600 dark:text-slate-100 dark:group-hover:text-slate-300">
               {course.fullname}
@@ -53,12 +160,29 @@ function CourseCard({ course, categoryName }: { course: Course; categoryName: st
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">{course.shortname}</p>
           <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{categoryName}</p>
+        </Link>
+
+        <div className="mt-4 flex items-center justify-between">
+          <Link
+            href={`/courses/${course.id}`}
+            className="text-sm font-medium text-slate-600 hover:underline dark:text-slate-400"
+          >
+            Ver matriculados →
+          </Link>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setEditing(true)}
+              className="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+            >
+              Editar
+            </button>
+            <button onClick={handleDelete} className="text-sm text-red-600 hover:text-red-800">
+              Borrar
+            </button>
+          </div>
         </div>
-        <p className="mt-4 text-sm font-medium text-slate-600 group-hover:underline dark:text-slate-400">
-          Ver matriculados →
-        </p>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -222,7 +346,13 @@ export default function CoursesPage() {
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {pageCourses.map((course) => (
-              <CourseCard key={course.id} course={course} categoryName={categoryName(course.categoryid)} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                categoryName={categoryName(course.categoryid)}
+                categories={categories}
+                onChanged={loadData}
+              />
             ))}
             {filteredCourses.length === 0 && (
               <p className="col-span-full py-10 text-center text-slate-500">

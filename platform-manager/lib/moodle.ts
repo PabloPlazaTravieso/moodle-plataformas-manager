@@ -141,6 +141,18 @@ export function createCourse(course: { fullname: string; shortname: string; cate
   });
 }
 
+export function updateCourse(course: { id: number; fullname: string; shortname: string; categoryid: number }) {
+  return callMoodle<null>("core_course_update_courses", {
+    courses: [course],
+  });
+}
+
+export function deleteCourse(courseId: number) {
+  return callMoodle<{ id: number; status: boolean }[]>("core_course_delete_courses", {
+    courseids: [courseId],
+  });
+}
+
 export function createUser(user: {
   username: string;
   password: string;
@@ -150,6 +162,25 @@ export function createUser(user: {
 }) {
   return callMoodle<{ id: number; username: string }[]>("core_user_create_users", {
     users: [user],
+  });
+}
+
+export function updateUser(user: {
+  id: number;
+  username?: string;
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  suspended?: boolean;
+}) {
+  return callMoodle<null>("core_user_update_users", {
+    users: [user],
+  });
+}
+
+export function deleteUser(userId: number) {
+  return callMoodle<null>("core_user_delete_users", {
+    userids: [userId],
   });
 }
 
