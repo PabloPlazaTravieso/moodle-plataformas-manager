@@ -18,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const body = await request.json();
 
   try {
-    await enrolUser(Number(id), Number(body.userid));
+    await enrolUser(Number(id), Number(body.userid), body.roleid ? Number(body.roleid) : undefined);
     return NextResponse.json({ ok: true });
   } catch (e) {
     const message = e instanceof MoodleError ? e.message : "Error al matricular al alumno";

@@ -53,10 +53,26 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
     onChanged();
   }
 
+  async function handleToggleSuspended() {
+    const response = await fetch(`/api/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ suspended: !user.suspended }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error ?? "Error al cambiar el estado del usuario");
+      return;
+    }
+
+    onChanged();
+  }
+
   if (editing) {
     return (
       <tr>
-        <td colSpan={6} className="px-4 py-3">
+        <td colSpan={7} className="px-4 py-3">
           <form onSubmit={handleSave} className="flex flex-wrap items-center gap-2">
             <input
               className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
@@ -127,6 +143,18 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
         >
           {user.confirmed ? "Sí" : "No"}
         </span>
+      </td>
+      <td className="px-4 py-2">
+        <button
+          onClick={handleToggleSuspended}
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+            user.suspended
+              ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300"
+              : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300"
+          }`}
+        >
+          {user.suspended ? "Suspendido" : "Activo"}
+        </button>
       </td>
       <td className="px-4 py-2">
         <div className="flex gap-2">
@@ -310,6 +338,7 @@ export default function UsersPage() {
                 <th className="px-4 py-2">Email</th>
                 <th className="px-4 py-2">Rol</th>
                 <th className="px-4 py-2">Confirmado</th>
+                <th className="px-4 py-2">Estado</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
@@ -319,7 +348,7 @@ export default function UsersPage() {
               ))}
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={7} className="px-4 py-6 text-center text-slate-500">
                     {search ? "Ningún usuario coincide con la búsqueda." : "No hay usuarios todavía."}
                   </td>
                 </tr>

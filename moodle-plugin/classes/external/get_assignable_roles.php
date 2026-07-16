@@ -1,0 +1,93 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace local_miplugin\external;
+
+use context_system;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
+
+/**
+ * External function that returns the roles a course manager typically needs
+ * when enrolling someone (student, teacher roles, manager), so the app can
+ * offer a role picker instead of a hardcoded role id.
+ *
+ * @package    local_miplugin
+ * @copyright  2026 Pablo Plaza
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class get_assignable_roles extends external_api {
+    /** @var string[] archetypes considered relevant for course enrolment */
+    const RELEVANT_ARCHETYPES = ['student', 'teacher', 'editingteacher', 'manager'];
+
+    /**
+     * Describes the parameters for execute.
+     *
+     * @return external_function_parameters
+     */
+    public static function execute_parameters(): external_function_parameters {
+        return new external_function_parameters([]);
+    }
+
+    /**
+     * Returns the roles available for enrolling users in a course.
+     *
+     * @return array
+     */
+    public static function execute(): array {
+        global $DB;
+
+        self::validate_parameters(self::execute_parameters(), []);
+
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('local/miplugin:viewusers', $context);
+
+        list($insql, $params) = $DB->get_in_or_equal(self::RELEVANT_ARCHETYPES, SQL_PARAMS_NAMED);
+        $roles = $DB->get_records_select('role', "archetype {$insql}", $params, 'sortorder ASC');
+
+        $result = [];
+        foreach ($roles as $role) {
+            $result[] = [
+                'id' => (int) $role->id,
+                'shortname' => $role->shortname,
+                'name' => role_get_name($role, $context),
+            ];
+        }
+
+        return ['roles' => $result];
+    }
+
+    /**
+     * Describes the return value for execute.
+     *
+     * @return external_single_structure
+     */
+    public static function execute_returns(): external_single_structure {
+        return new external_single_structure([
+            'roles' => new external_multiple_structure(
+                new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Role id'),
+                    'shortname' => new external_value(PARAM_ALPHANUMEXT, 'Role shortname'),
+                    'name' => new external_value(PARAM_TEXT, 'Localised role name'),
+                ])
+            ),
+        ]);
+    }
+}

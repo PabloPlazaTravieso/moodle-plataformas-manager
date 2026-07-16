@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import type { EnrolledUser, MoodleUser } from "@/lib/moodle";
+import type { AssignableRole, EnrolledUser, MoodleUser } from "@/lib/moodle";
 
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
@@ -14,6 +14,8 @@ export default function CourseDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [roles, setRoles] = useState<AssignableRole[]>([]);
+  const [selectedRoleId, setSelectedRoleId] = useState("");
   const [enrolling, setEnrolling] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -26,12 +28,14 @@ export default function CourseDetailPage() {
     setLoading(true);
     setError(null);
 
-    const [enrolledRes, usersRes] = await Promise.all([
+    const [enrolledRes, usersRes, rolesRes] = await Promise.all([
       fetch(`/api/courses/${courseId}/enrollments`),
       fetch("/api/users"),
+      fetch("/api/roles"),
     ]);
     const enrolledData = await enrolledRes.json();
     const usersData = await usersRes.json();
+    const rolesData = await rolesRes.json();
 
     if (!enrolledRes.ok) {
       setError(enrolledData.error ?? "Error al cargar los matriculados");
@@ -44,6 +48,12 @@ export default function CourseDetailPage() {
       if (usersData.users.length > 0) {
         setSelectedUserId(String(usersData.users[0].id));
       }
+    }
+
+    if (rolesRes.ok) {
+      setRoles(rolesData.roles);
+      const studentRole = rolesData.roles.find((r: AssignableRole) => r.shortname === "student");
+      setSelectedRoleId(String(studentRole?.id ?? rolesData.roles[0]?.id ?? ""));
     }
 
     setLoading(false);
@@ -63,7 +73,7 @@ export default function CourseDetailPage() {
     const response = await fetch(`/api/courses/${courseId}/enrollments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userid: selectedUserId }),
+      body: JSON.stringify({ userid: selectedUserId, roleid: selectedRoleId }),
     });
     const data = await response.json();
 
@@ -179,6 +189,17 @@ export default function CourseDetailPage() {
             {notEnrolledUsers.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.firstname} {user.lastname} ({user.username})
+              </option>
+            ))}
+          </select>
+          <select
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            value={selectedRoleId}
+            onChange={(e) => setSelectedRoleId(e.target.value)}
+          >
+            {roles.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.name}
               </option>
             ))}
           </select>

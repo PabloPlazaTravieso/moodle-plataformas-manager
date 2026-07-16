@@ -65,6 +65,14 @@ $functions = [
         'ajax'          => false,
         'capabilities'  => 'local/miplugin:viewlog',
     ],
+    'local_miplugin_get_assignable_roles' => [
+        'classname'     => 'local_miplugin\external\get_assignable_roles',
+        'methodname'    => 'execute',
+        'description'   => 'Returns the roles available for enrolling users in a course.',
+        'type'          => 'read',
+        'ajax'          => false,
+        'capabilities'  => 'local/miplugin:viewusers',
+    ],
 ];
 
 $services = [
@@ -85,6 +93,7 @@ $services = [
             'enrol_manual_unenrol_users',
             'local_miplugin_set_course_image',
             'local_miplugin_get_activity_log',
+            'local_miplugin_get_assignable_roles',
         ],
         'restrictedusers' => 0,
         'enabled'         => 1,

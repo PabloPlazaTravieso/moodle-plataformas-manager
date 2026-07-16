@@ -32,6 +32,12 @@ function appendParam(form: URLSearchParams, key: string, value: MoodleParamValue
     Object.entries(value).forEach(([subKey, subValue]) => appendParam(form, `${key}[${subKey}]`, subValue));
     return;
   }
+  // Moodle's external API validation for PARAM_BOOL only accepts 0/1, not the strings
+  // "true"/"false" that String(value) would produce.
+  if (typeof value === "boolean") {
+    form.append(key, value ? "1" : "0");
+    return;
+  }
   form.append(key, String(value));
 }
 
@@ -195,11 +201,21 @@ export function getEnrolledUsers(courseId: number) {
   return callMoodle<EnrolledUser[]>("core_enrol_get_enrolled_users", { courseid: courseId });
 }
 
-export function enrolUser(courseId: number, userId: number) {
-  const roleId = Number(process.env.MOODLE_STUDENT_ROLE_ID ?? 5);
+export function enrolUser(courseId: number, userId: number, roleId?: number) {
+  const resolvedRoleId = roleId ?? Number(process.env.MOODLE_STUDENT_ROLE_ID ?? 5);
   return callMoodle<null>("enrol_manual_enrol_users", {
-    enrolments: [{ roleid: roleId, userid: userId, courseid: courseId }],
+    enrolments: [{ roleid: resolvedRoleId, userid: userId, courseid: courseId }],
   });
+}
+
+export interface AssignableRole {
+  id: number;
+  shortname: string;
+  name: string;
+}
+
+export function getAssignableRoles() {
+  return callMoodle<{ roles: AssignableRole[] }>("local_miplugin_get_assignable_roles").then((r) => r.roles);
 }
 
 export function unenrolUser(courseId: number, userId: number) {
