@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { MoodleUser } from "@/lib/moodle";
 import { PasswordInput } from "../password-input";
@@ -119,7 +120,11 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
 
   return (
     <tr>
-      <td className="px-4 py-2">{user.username}</td>
+      <td className="px-4 py-2">
+        <Link href={`/users/${user.id}`} className="text-slate-900 hover:underline dark:text-slate-100">
+          {user.username}
+        </Link>
+      </td>
       <td className="px-4 py-2">
         {user.firstname} {user.lastname}
       </td>

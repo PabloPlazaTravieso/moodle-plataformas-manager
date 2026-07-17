@@ -91,6 +91,7 @@ $services = [
             'core_user_update_users',
             'core_user_delete_users',
             'core_enrol_get_enrolled_users',
+            'core_enrol_get_users_courses',
             'enrol_manual_enrol_users',
             'enrol_manual_unenrol_users',
             'local_miplugin_set_course_image',

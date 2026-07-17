@@ -10,8 +10,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       id: Number(id),
       fullname: body.fullname,
       shortname: body.shortname,
-      categoryid: Number(body.categoryid),
+      categoryid: body.categoryid !== undefined ? Number(body.categoryid) : undefined,
       summary: body.summary,
+      visible: body.visible,
     });
     return NextResponse.json({ ok: true });
   } catch (e) {

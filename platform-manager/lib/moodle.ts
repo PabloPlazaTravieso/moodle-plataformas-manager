@@ -133,6 +133,21 @@ export interface EnrolledUser {
   roles: { roleid: number; name: string; shortname: string }[];
 }
 
+export interface UserCourse {
+  id: number;
+  shortname: string;
+  fullname: string;
+  visible: boolean;
+}
+
+export function getUserCourses(userId: number) {
+  return callMoodle<
+    { id: number; shortname: string; fullname: string; visible: number }[]
+  >("core_enrol_get_users_courses", { userid: userId }).then((courses) =>
+    courses.map((c) => ({ id: c.id, shortname: c.shortname, fullname: c.fullname, visible: Boolean(c.visible) })),
+  );
+}
+
 export function createCategory(category: { name: string; parent?: number }) {
   return callMoodle<{ id: number; name: string }[]>("core_course_create_categories", {
     categories: [{ name: category.name, parent: category.parent ?? 0 }],
@@ -180,10 +195,11 @@ export function createCourse(course: {
 
 export function updateCourse(course: {
   id: number;
-  fullname: string;
-  shortname: string;
-  categoryid: number;
+  fullname?: string;
+  shortname?: string;
+  categoryid?: number;
   summary?: string;
+  visible?: boolean;
 }) {
   return callMoodle<null>("core_course_update_courses", {
     courses: [course],

@@ -78,6 +78,22 @@ function CourseCard({
     onChanged();
   }
 
+  async function handleToggleVisible() {
+    const response = await fetch(`/api/courses/${course.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visible: !course.visible }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error ?? "Error al cambiar la visibilidad del curso");
+      return;
+    }
+
+    onChanged();
+  }
+
   if (editing) {
     return (
       <form
@@ -160,15 +176,21 @@ function CourseCard({
             <h3 className="font-medium text-slate-900 group-hover:text-slate-600 dark:text-slate-100 dark:group-hover:text-slate-300">
               {course.fullname}
             </h3>
-            <span
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleToggleVisible();
+              }}
+              title="Cambiar visibilidad"
               className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
                 course.visible
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                  : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300"
+                  : "bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-400"
               }`}
             >
               {course.visible ? "Visible" : "Oculto"}
-            </span>
+            </button>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">{course.shortname}</p>
           <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{categoryName}</p>
