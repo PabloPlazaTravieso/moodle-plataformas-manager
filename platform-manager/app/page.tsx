@@ -15,17 +15,20 @@ export default async function DashboardPage() {
   let info: Awaited<ReturnType<typeof getSiteInfo>> | null = null;
   let logEntries: Awaited<ReturnType<typeof getActivityLog>> = [];
 
-  try {
-    info = await getSiteInfo();
-  } catch (e) {
-    error = e instanceof Error ? e.message : "Error desconocido al conectar con Moodle";
+  // Run both Moodle calls in parallel: they're independent, and this environment's
+  // requests are slow enough that running them sequentially roughly doubles load time.
+  const [infoResult, logResult] = await Promise.allSettled([getSiteInfo(), getActivityLog()]);
+
+  if (infoResult.status === "fulfilled") {
+    info = infoResult.value;
+  } else {
+    error = infoResult.reason instanceof Error ? infoResult.reason.message : "Error desconocido al conectar con Moodle";
   }
 
-  try {
-    logEntries = await getActivityLog();
-  } catch {
-    // Non-critical: the dashboard still works without the charts.
+  if (logResult.status === "fulfilled") {
+    logEntries = logResult.value;
   }
+  // If logResult rejected, the dashboard still works without the charts.
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
