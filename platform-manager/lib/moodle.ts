@@ -11,7 +11,7 @@ export class MoodleError extends Error {
   }
 }
 
-type MoodleParamValue =
+export type MoodleParamValue =
   | string
   | number
   | boolean
@@ -20,7 +20,7 @@ type MoodleParamValue =
   | MoodleParamValue[]
   | { [key: string]: MoodleParamValue };
 
-function appendParam(form: URLSearchParams, key: string, value: MoodleParamValue) {
+export function appendParam(form: URLSearchParams, key: string, value: MoodleParamValue) {
   if (value === null || value === undefined) {
     return;
   }
