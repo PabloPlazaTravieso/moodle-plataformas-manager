@@ -132,6 +132,24 @@ export interface EnrolledUser {
   roles: { roleid: number; name: string; shortname: string }[];
 }
 
+export function createCategory(category: { name: string; parent?: number }) {
+  return callMoodle<{ id: number; name: string }[]>("core_course_create_categories", {
+    categories: [{ name: category.name, parent: category.parent ?? 0 }],
+  });
+}
+
+export function deleteCategory(categoryId: number, options: { newParentId?: number; recursive?: boolean } = {}) {
+  return callMoodle<null>("core_course_delete_categories", {
+    categories: [
+      {
+        id: categoryId,
+        newparent: options.newParentId,
+        recursive: options.recursive ?? false,
+      },
+    ],
+  });
+}
+
 export function getSiteInfo() {
   return callMoodle<SiteInfo>("local_miplugin_get_site_info");
 }

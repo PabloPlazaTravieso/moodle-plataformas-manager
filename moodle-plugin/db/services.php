@@ -82,6 +82,8 @@ $services = [
             'local_miplugin_get_courses',
             'local_miplugin_get_users',
             'core_course_get_categories',
+            'core_course_create_categories',
+            'core_course_delete_categories',
             'core_course_create_courses',
             'core_course_update_courses',
             'core_course_delete_courses',
