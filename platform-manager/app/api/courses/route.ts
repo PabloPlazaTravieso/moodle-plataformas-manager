@@ -20,6 +20,8 @@ export async function POST(request: NextRequest) {
       shortname: body.shortname,
       categoryid: Number(body.categoryid),
       summary: body.summary,
+      startdate: body.startdate ? Number(body.startdate) : undefined,
+      enddate: body.enddate ? Number(body.enddate) : undefined,
     });
     return NextResponse.json({ course: result[0] });
   } catch (e) {

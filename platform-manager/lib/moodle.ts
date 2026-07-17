@@ -187,6 +187,8 @@ export function createCourse(course: {
   shortname: string;
   categoryid: number;
   summary?: string;
+  startdate?: number;
+  enddate?: number;
 }) {
   return callMoodle<{ id: number; shortname: string }[]>("core_course_create_courses", {
     courses: [course],
@@ -200,6 +202,8 @@ export function updateCourse(course: {
   categoryid?: number;
   summary?: string;
   visible?: boolean;
+  startdate?: number;
+  enddate?: number;
 }) {
   return callMoodle<null>("core_course_update_courses", {
     courses: [course],

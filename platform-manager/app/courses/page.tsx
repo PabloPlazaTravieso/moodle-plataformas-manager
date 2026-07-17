@@ -10,6 +10,16 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function timestampToDateInput(timestamp: number): string {
+  if (!timestamp) return "";
+  return new Date(timestamp * 1000).toISOString().slice(0, 10);
+}
+
+function dateInputToTimestamp(value: string): number | undefined {
+  if (!value) return undefined;
+  return Math.floor(new Date(`${value}T00:00:00Z`).getTime() / 1000);
+}
+
 const PLACEHOLDER_GRADIENTS = [
   "from-sky-400 to-blue-600",
   "from-emerald-400 to-teal-600",
@@ -36,6 +46,8 @@ function CourseCard({
   const [shortname, setShortname] = useState(course.shortname);
   const [summary, setSummary] = useState(course.summary);
   const [categoryid, setCategoryid] = useState(String(course.categoryid));
+  const [startdate, setStartdate] = useState(timestampToDateInput(course.startdate));
+  const [enddate, setEnddate] = useState(timestampToDateInput(course.enddate));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +59,14 @@ function CourseCard({
     const response = await fetch(`/api/courses/${course.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullname, shortname, categoryid, summary }),
+      body: JSON.stringify({
+        fullname,
+        shortname,
+        categoryid,
+        summary,
+        startdate: dateInputToTimestamp(startdate),
+        enddate: dateInputToTimestamp(enddate),
+      }),
     });
     const data = await response.json();
 
@@ -132,6 +151,26 @@ function CourseCard({
           placeholder="Resumen del curso (opcional)"
           rows={3}
         />
+        <div className="flex gap-2">
+          <label className="flex-1 text-xs text-slate-500 dark:text-slate-400">
+            Inicio
+            <input
+              type="date"
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              value={startdate}
+              onChange={(e) => setStartdate(e.target.value)}
+            />
+          </label>
+          <label className="flex-1 text-xs text-slate-500 dark:text-slate-400">
+            Fin
+            <input
+              type="date"
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              value={enddate}
+              onChange={(e) => setEnddate(e.target.value)}
+            />
+          </label>
+        </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="mt-1 flex gap-2">
           <button
@@ -240,6 +279,8 @@ export default function CoursesPage() {
   const [shortname, setShortname] = useState("");
   const [summary, setSummary] = useState("");
   const [categoryid, setCategoryid] = useState("");
+  const [startdate, setStartdate] = useState("");
+  const [enddate, setEnddate] = useState("");
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -298,7 +339,14 @@ export default function CoursesPage() {
     const response = await fetch("/api/courses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullname, shortname, categoryid, summary }),
+      body: JSON.stringify({
+        fullname,
+        shortname,
+        categoryid,
+        summary,
+        startdate: dateInputToTimestamp(startdate),
+        enddate: dateInputToTimestamp(enddate),
+      }),
     });
     const data = await response.json();
 
@@ -312,6 +360,8 @@ export default function CoursesPage() {
     setFullname("");
     setShortname("");
     setSummary("");
+    setStartdate("");
+    setEnddate("");
     setShowForm(false);
     await loadData();
   }
@@ -368,6 +418,26 @@ export default function CoursesPage() {
             onChange={(e) => setSummary(e.target.value)}
             rows={3}
           />
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <label className="text-xs text-slate-500 dark:text-slate-400">
+              Fecha de inicio (opcional)
+              <input
+                type="date"
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                value={startdate}
+                onChange={(e) => setStartdate(e.target.value)}
+              />
+            </label>
+            <label className="text-xs text-slate-500 dark:text-slate-400">
+              Fecha de fin (opcional)
+              <input
+                type="date"
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                value={enddate}
+                onChange={(e) => setEnddate(e.target.value)}
+              />
+            </label>
+          </div>
           {formError && <p className="mt-3 text-sm text-red-600">{formError}</p>}
           <button
             type="submit"

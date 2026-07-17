@@ -13,6 +13,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       categoryid: body.categoryid !== undefined ? Number(body.categoryid) : undefined,
       summary: body.summary,
       visible: body.visible,
+      startdate: body.startdate ? Number(body.startdate) : undefined,
+      enddate: body.enddate ? Number(body.enddate) : undefined,
     });
     return NextResponse.json({ ok: true });
   } catch (e) {
