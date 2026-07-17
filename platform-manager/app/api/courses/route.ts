@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       fullname: body.fullname,
       shortname: body.shortname,
       categoryid: Number(body.categoryid),
+      summary: body.summary,
     });
     return NextResponse.json({ course: result[0] });
   } catch (e) {

@@ -11,6 +11,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       fullname: body.fullname,
       shortname: body.shortname,
       categoryid: Number(body.categoryid),
+      summary: body.summary,
     });
     return NextResponse.json({ ok: true });
   } catch (e) {

@@ -59,7 +59,7 @@ class get_courses extends external_api {
             'id <> :siteid',
             ['siteid' => SITEID],
             'fullname ASC',
-            'id, shortname, fullname, category, visible, startdate, enddate'
+            'id, shortname, fullname, summary, summaryformat, category, visible, startdate, enddate'
         );
 
         $fs = get_file_storage();
@@ -82,10 +82,20 @@ class get_courses extends external_api {
                 }
             }
 
+            [$summary] = \core_external\util::format_text(
+                $course->summary,
+                $course->summaryformat,
+                $coursecontext,
+                'course',
+                'summary',
+                null
+            );
+
             $result[] = [
                 'id' => (int) $course->id,
                 'shortname' => format_string($course->shortname),
                 'fullname' => format_string($course->fullname),
+                'summary' => $summary,
                 'categoryid' => (int) $course->category,
                 'visible' => (bool) $course->visible,
                 'startdate' => (int) $course->startdate,
@@ -109,6 +119,7 @@ class get_courses extends external_api {
                     'id' => new external_value(PARAM_INT, 'Course id'),
                     'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
                     'fullname' => new external_value(PARAM_TEXT, 'Course full name'),
+                    'summary' => new external_value(PARAM_RAW, 'Course summary/description (HTML)'),
                     'categoryid' => new external_value(PARAM_INT, 'Course category id'),
                     'visible' => new external_value(PARAM_BOOL, 'Whether the course is visible'),
                     'startdate' => new external_value(PARAM_INT, 'Course start date (timestamp)'),

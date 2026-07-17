@@ -6,6 +6,10 @@ import type { Course, CourseCategory } from "@/lib/moodle";
 
 const PAGE_SIZE = 6;
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
 const PLACEHOLDER_GRADIENTS = [
   "from-sky-400 to-blue-600",
   "from-emerald-400 to-teal-600",
@@ -30,6 +34,7 @@ function CourseCard({
   const [editing, setEditing] = useState(false);
   const [fullname, setFullname] = useState(course.fullname);
   const [shortname, setShortname] = useState(course.shortname);
+  const [summary, setSummary] = useState(course.summary);
   const [categoryid, setCategoryid] = useState(String(course.categoryid));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +47,7 @@ function CourseCard({
     const response = await fetch(`/api/courses/${course.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullname, shortname, categoryid }),
+      body: JSON.stringify({ fullname, shortname, categoryid, summary }),
     });
     const data = await response.json();
 
@@ -104,6 +109,13 @@ function CourseCard({
             </option>
           ))}
         </select>
+        <textarea
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+          placeholder="Resumen del curso (opcional)"
+          rows={3}
+        />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="mt-1 flex gap-2">
           <button
@@ -160,6 +172,11 @@ function CourseCard({
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">{course.shortname}</p>
           <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{categoryName}</p>
+          {course.summary && (
+            <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
+              {stripHtml(course.summary)}
+            </p>
+          )}
         </Link>
 
         <div className="mt-4 flex items-center justify-between">
@@ -193,11 +210,13 @@ export default function CoursesPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [page, setPage] = useState(1);
 
   const [showForm, setShowForm] = useState(false);
   const [fullname, setFullname] = useState("");
   const [shortname, setShortname] = useState("");
+  const [summary, setSummary] = useState("");
   const [categoryid, setCategoryid] = useState("");
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -238,11 +257,12 @@ export default function CoursesPage() {
 
   const filteredCourses = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return courses;
-    return courses.filter(
-      (c) => c.fullname.toLowerCase().includes(term) || c.shortname.toLowerCase().includes(term),
-    );
-  }, [courses, search]);
+    return courses.filter((c) => {
+      const matchesTerm = !term || c.fullname.toLowerCase().includes(term) || c.shortname.toLowerCase().includes(term);
+      const matchesCategory = !categoryFilter || c.categoryid === Number(categoryFilter);
+      return matchesTerm && matchesCategory;
+    });
+  }, [courses, search, categoryFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -256,7 +276,7 @@ export default function CoursesPage() {
     const response = await fetch("/api/courses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullname, shortname, categoryid }),
+      body: JSON.stringify({ fullname, shortname, categoryid, summary }),
     });
     const data = await response.json();
 
@@ -269,6 +289,7 @@ export default function CoursesPage() {
 
     setFullname("");
     setShortname("");
+    setSummary("");
     setShowForm(false);
     await loadData();
   }
@@ -318,6 +339,13 @@ export default function CoursesPage() {
               ))}
             </select>
           </div>
+          <textarea
+            className="mt-4 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            placeholder="Resumen del curso (opcional)"
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            rows={3}
+          />
           {formError && <p className="mt-3 text-sm text-red-600">{formError}</p>}
           <button
             type="submit"
@@ -329,15 +357,32 @@ export default function CoursesPage() {
         </form>
       )}
 
-      <input
-        className="mb-6 w-full max-w-sm rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-        placeholder="Buscar por nombre..."
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setPage(1);
-        }}
-      />
+      <div className="mb-6 flex flex-wrap gap-3">
+        <input
+          className="w-full max-w-sm rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          placeholder="Buscar por nombre..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+        />
+        <select
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          value={categoryFilter}
+          onChange={(e) => {
+            setCategoryFilter(e.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="">Todas las categorías</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading && <p className="text-sm text-slate-500">Cargando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}

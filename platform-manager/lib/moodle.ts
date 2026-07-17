@@ -92,6 +92,7 @@ export interface Course {
   id: number;
   shortname: string;
   fullname: string;
+  summary: string;
   categoryid: number;
   visible: boolean;
   startdate: number;
@@ -166,13 +167,24 @@ export function getCategories() {
   return callMoodle<CourseCategory[]>("core_course_get_categories");
 }
 
-export function createCourse(course: { fullname: string; shortname: string; categoryid: number }) {
+export function createCourse(course: {
+  fullname: string;
+  shortname: string;
+  categoryid: number;
+  summary?: string;
+}) {
   return callMoodle<{ id: number; shortname: string }[]>("core_course_create_courses", {
     courses: [course],
   });
 }
 
-export function updateCourse(course: { id: number; fullname: string; shortname: string; categoryid: number }) {
+export function updateCourse(course: {
+  id: number;
+  fullname: string;
+  shortname: string;
+  categoryid: number;
+  summary?: string;
+}) {
   return callMoodle<null>("core_course_update_courses", {
     courses: [course],
   });
