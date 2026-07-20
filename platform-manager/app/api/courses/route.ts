@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCourse, getCourses, MoodleError } from "@/lib/moodle";
+import { csvResponse } from "@/lib/csv";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const courses = await getCourses();
+
+    if (request.nextUrl.searchParams.get("export") === "csv") {
+      return csvResponse("cursos.csv", [
+        ["shortname", "fullname", "categoryid", "visible", "startdate", "enddate"],
+        ...courses.map((c) => [c.shortname, c.fullname, c.categoryid, c.visible, c.startdate, c.enddate]),
+      ]);
+    }
+
     return NextResponse.json({ courses });
   } catch (e) {
     const message = e instanceof MoodleError ? e.message : "Error al obtener los cursos";

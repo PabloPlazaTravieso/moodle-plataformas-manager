@@ -40,7 +40,6 @@ export default function UserDetailPage() {
       setLoading(false);
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard fetch-on-mount pattern
     loadData();
   }, [userId]);
 

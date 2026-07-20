@@ -263,12 +263,21 @@ export default function UsersPage() {
     <div className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Usuarios</h1>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900"
-        >
-          {showForm ? "Cancelar" : "+ Nuevo usuario"}
-        </button>
+        <div className="flex gap-2">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- file download, not page navigation */}
+          <a
+            href="/api/users?export=csv"
+            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            Exportar CSV
+          </a>
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900"
+          >
+            {showForm ? "Cancelar" : "+ Nuevo usuario"}
+          </button>
+        </div>
       </div>
 
       {showForm && (
