@@ -366,3 +366,10 @@ export function deleteCourseNote(noteId: number) {
     noteid: noteId,
   });
 }
+
+export function updateCourseNote(noteId: number, content: string) {
+  return callMoodle<{ success: boolean }>("local_miplugin_update_course_note", {
+    noteid: noteId,
+    content,
+  });
+}

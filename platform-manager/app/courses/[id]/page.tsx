@@ -4,6 +4,87 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import type { AssignableRole, CourseNote, EnrolledUser, MoodleUser } from "@/lib/moodle";
 
+function NoteItem({
+  note,
+  onSave,
+  onDelete,
+}: {
+  note: CourseNote;
+  onSave: (noteId: number, content: string) => Promise<string | null>;
+  onDelete: (noteId: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [content, setContent] = useState(note.content);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave(event: React.FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    const errorMessage = await onSave(note.id, content);
+
+    setSaving(false);
+
+    if (errorMessage) {
+      setError(errorMessage);
+      return;
+    }
+
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <li className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <textarea
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={3}
+        />
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        <div className="mt-2 flex gap-2">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+          >
+            {saving ? "Guardando..." : "Guardar"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
+          >
+            Cancelar
+          </button>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <div>
+        <p className="text-sm text-slate-800 dark:text-slate-200">{note.content}</p>
+        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+          {note.userfullname} · {new Date(note.timecreated * 1000).toLocaleString()}
+        </p>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        <button onClick={() => setEditing(true)} className="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+          Editar
+        </button>
+        <button onClick={() => onDelete(note.id)} className="text-sm text-red-600 hover:text-red-800">
+          Borrar
+        </button>
+      </div>
+    </li>
+  );
+}
+
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
   const courseId = params.id;
@@ -153,6 +234,22 @@ export default function CourseDetailPage() {
     }
 
     await loadData();
+  }
+
+  async function handleSaveNote(noteId: number, content: string): Promise<string | null> {
+    const response = await fetch(`/api/courses/${courseId}/notes/${noteId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return data.error ?? "Error al actualizar la nota";
+    }
+
+    await loadData();
+    return null;
   }
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -335,23 +432,7 @@ export default function CourseDetailPage() {
 
       <ul className="space-y-2">
         {notes.map((note) => (
-          <li
-            key={note.id}
-            className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
-          >
-            <div>
-              <p className="text-sm text-slate-800 dark:text-slate-200">{note.content}</p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                {note.userfullname} · {new Date(note.timecreated * 1000).toLocaleString()}
-              </p>
-            </div>
-            <button
-              onClick={() => handleDeleteNote(note.id)}
-              className="shrink-0 text-sm text-red-600 hover:text-red-800"
-            >
-              Borrar
-            </button>
-          </li>
+          <NoteItem key={note.id} note={note} onSave={handleSaveNote} onDelete={handleDeleteNote} />
         ))}
         {notes.length === 0 && <p className="text-sm text-slate-500">No hay notas todavía.</p>}
       </ul>

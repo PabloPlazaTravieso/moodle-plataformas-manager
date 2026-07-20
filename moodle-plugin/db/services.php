@@ -97,6 +97,14 @@ $functions = [
         'ajax'          => false,
         'capabilities'  => 'local/miplugin:managenotes',
     ],
+    'local_miplugin_update_course_note' => [
+        'classname'     => 'local_miplugin\external\update_course_note',
+        'methodname'    => 'execute',
+        'description'   => 'Updates the content of a course note.',
+        'type'          => 'write',
+        'ajax'          => false,
+        'capabilities'  => 'local/miplugin:managenotes',
+    ],
 ];
 
 $services = [
@@ -124,6 +132,7 @@ $services = [
             'local_miplugin_get_course_notes',
             'local_miplugin_add_course_note',
             'local_miplugin_delete_course_note',
+            'local_miplugin_update_course_note',
         ],
         'restrictedusers' => 0,
         'enabled'         => 1,
