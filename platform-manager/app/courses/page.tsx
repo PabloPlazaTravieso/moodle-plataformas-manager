@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Course, CourseCategory } from "@/lib/moodle";
+import { useToast } from "../components/toast";
 
 const PAGE_SIZE = 6;
 
@@ -40,6 +41,7 @@ function CourseCard({
   onChanged: () => void;
 }) {
   const gradient = PLACEHOLDER_GRADIENTS[course.id % PLACEHOLDER_GRADIENTS.length];
+  const { notify } = useToast();
 
   const [editing, setEditing] = useState(false);
   const [fullname, setFullname] = useState(course.fullname);
@@ -78,6 +80,7 @@ function CourseCard({
     }
 
     setEditing(false);
+    notify(`Curso "${fullname}" actualizado`);
     onChanged();
   }
 
@@ -90,10 +93,11 @@ function CourseCard({
     const data = await response.json();
 
     if (!response.ok) {
-      alert(data.error ?? "Error al borrar el curso");
+      notify(data.error ?? "Error al borrar el curso", "error");
       return;
     }
 
+    notify(`Curso "${course.fullname}" borrado`);
     onChanged();
   }
 
@@ -106,7 +110,7 @@ function CourseCard({
     const data = await response.json();
 
     if (!response.ok) {
-      alert(data.error ?? "Error al cambiar la visibilidad del curso");
+      notify(data.error ?? "Error al cambiar la visibilidad del curso", "error");
       return;
     }
 
@@ -117,24 +121,24 @@ function CourseCard({
     return (
       <form
         onSubmit={handleSave}
-        className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        className="flex flex-col gap-2 rounded-xl border border-brand-blue-100 bg-white p-5 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975"
       >
         <input
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           value={fullname}
           onChange={(e) => setFullname(e.target.value)}
           placeholder="Nombre completo"
           required
         />
         <input
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           value={shortname}
           onChange={(e) => setShortname(e.target.value)}
           placeholder="Nombre corto"
           required
         />
         <select
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           value={categoryid}
           onChange={(e) => setCategoryid(e.target.value)}
         >
@@ -145,27 +149,27 @@ function CourseCard({
           ))}
         </select>
         <textarea
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
           placeholder="Resumen del curso (opcional)"
           rows={3}
         />
         <div className="flex gap-2">
-          <label className="flex-1 text-xs text-slate-500 dark:text-slate-400">
+          <label className="flex-1 text-xs text-brand-blue-500 dark:text-brand-blue-300">
             Inicio
             <input
               type="date"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="mt-1 w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               value={startdate}
               onChange={(e) => setStartdate(e.target.value)}
             />
           </label>
-          <label className="flex-1 text-xs text-slate-500 dark:text-slate-400">
+          <label className="flex-1 text-xs text-brand-blue-500 dark:text-brand-blue-300">
             Fin
             <input
               type="date"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="mt-1 w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               value={enddate}
               onChange={(e) => setEnddate(e.target.value)}
             />
@@ -176,14 +180,14 @@ function CourseCard({
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+            className="flex-1 rounded-md bg-brand-blue-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-blue-800 disabled:opacity-50 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
           >
             {saving ? "Guardando..." : "Guardar"}
           </button>
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
+            className="flex-1 rounded-md border border-brand-blue-100 px-3 py-1.5 text-sm dark:border-brand-blue-700"
           >
             Cancelar
           </button>
@@ -193,7 +197,7 @@ function CourseCard({
   }
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+    <div className="group flex flex-col overflow-hidden rounded-xl border border-brand-blue-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-brand-blue-800 dark:bg-brand-blue-975">
       <Link href={`/courses/${course.id}`}>
         {course.imageurl ? (
           // eslint-disable-next-line @next/next/no-img-element -- external Moodle image proxied through our own API
@@ -212,7 +216,7 @@ function CourseCard({
       <div className="flex flex-1 flex-col justify-between p-5">
         <Link href={`/courses/${course.id}`}>
           <div className="mb-2 flex items-start justify-between gap-2">
-            <h3 className="font-medium text-slate-900 group-hover:text-slate-600 dark:text-slate-100 dark:group-hover:text-slate-300">
+            <h3 className="font-medium text-brand-blue-975 group-hover:text-brand-blue-600 dark:text-brand-blue-50 dark:group-hover:text-brand-cyan-400">
               {course.fullname}
             </h3>
             <button
@@ -225,16 +229,16 @@ function CourseCard({
               className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
                 course.visible
                   ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300"
-                  : "bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-400"
+                  : "bg-brand-blue-100 text-brand-blue-600 hover:bg-brand-blue-200 dark:bg-brand-blue-800 dark:text-brand-blue-300"
               }`}
             >
               {course.visible ? "Visible" : "Oculto"}
             </button>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{course.shortname}</p>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{categoryName}</p>
+          <p className="text-sm text-brand-blue-500 dark:text-brand-blue-300">{course.shortname}</p>
+          <p className="mt-1 text-xs text-brand-blue-400 dark:text-brand-blue-400">{categoryName}</p>
           {course.summary && (
-            <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
+            <p className="mt-2 line-clamp-2 text-sm text-brand-blue-600 dark:text-brand-blue-300">
               {stripHtml(course.summary)}
             </p>
           )}
@@ -243,14 +247,14 @@ function CourseCard({
         <div className="mt-4 flex items-center justify-between">
           <Link
             href={`/courses/${course.id}`}
-            className="text-sm font-medium text-slate-600 hover:underline dark:text-slate-400"
+            className="text-sm font-medium text-brand-blue-600 hover:underline dark:text-brand-blue-300"
           >
             Ver matriculados →
           </Link>
           <div className="flex gap-2">
             <button
               onClick={() => setEditing(true)}
-              className="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+              className="text-sm text-brand-blue-500 hover:text-brand-blue-900 dark:text-brand-blue-300 dark:hover:text-brand-cyan-400"
             >
               Editar
             </button>
@@ -265,6 +269,7 @@ function CourseCard({
 }
 
 export default function CoursesPage() {
+  const { notify } = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<CourseCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -357,6 +362,7 @@ export default function CoursesPage() {
       return;
     }
 
+    notify(`Curso "${fullname}" creado`);
     setFullname("");
     setShortname("");
     setSummary("");
@@ -369,18 +375,18 @@ export default function CoursesPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Cursos</h1>
+        <h1 className="text-2xl font-semibold text-brand-blue-975 dark:text-brand-blue-50">Cursos</h1>
         <div className="flex gap-2">
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- file download, not page navigation */}
           <a
             href="/api/courses?export=csv"
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="rounded-md border border-brand-blue-100 px-4 py-2 text-sm font-medium text-brand-blue-700 hover:bg-brand-blue-50 dark:border-brand-blue-700 dark:text-brand-blue-200 dark:hover:bg-brand-blue-900/40"
           >
             Exportar CSV
           </a>
           <button
             onClick={() => setShowForm((v) => !v)}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900"
+            className="rounded-md bg-brand-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-800 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
           >
             {showForm ? "Cancelar" : "+ Nuevo curso"}
           </button>
@@ -390,26 +396,26 @@ export default function CoursesPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="mb-8 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+          className="mb-8 rounded-xl border border-brand-blue-100 bg-white p-6 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975"
         >
-          <h2 className="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100">Crear curso</h2>
+          <h2 className="mb-4 text-sm font-medium text-brand-blue-975 dark:text-brand-blue-50">Crear curso</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <input
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               placeholder="Nombre completo"
               value={fullname}
               onChange={(e) => setFullname(e.target.value)}
               required
             />
             <input
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               placeholder="Nombre corto"
               value={shortname}
               onChange={(e) => setShortname(e.target.value)}
               required
             />
             <select
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               value={categoryid}
               onChange={(e) => setCategoryid(e.target.value)}
             >
@@ -421,27 +427,27 @@ export default function CoursesPage() {
             </select>
           </div>
           <textarea
-            className="mt-4 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="mt-4 w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
             placeholder="Resumen del curso (opcional)"
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             rows={3}
           />
           <div className="mt-4 grid grid-cols-2 gap-4">
-            <label className="text-xs text-slate-500 dark:text-slate-400">
+            <label className="text-xs text-brand-blue-500 dark:text-brand-blue-300">
               Fecha de inicio (opcional)
               <input
                 type="date"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                className="mt-1 w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
                 value={startdate}
                 onChange={(e) => setStartdate(e.target.value)}
               />
             </label>
-            <label className="text-xs text-slate-500 dark:text-slate-400">
+            <label className="text-xs text-brand-blue-500 dark:text-brand-blue-300">
               Fecha de fin (opcional)
               <input
                 type="date"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                className="mt-1 w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
                 value={enddate}
                 onChange={(e) => setEnddate(e.target.value)}
               />
@@ -451,7 +457,7 @@ export default function CoursesPage() {
           <button
             type="submit"
             disabled={creating}
-            className="mt-4 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+            className="mt-4 rounded-md bg-brand-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-800 disabled:opacity-50 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
           >
             {creating ? "Creando..." : "Crear curso"}
           </button>
@@ -460,7 +466,7 @@ export default function CoursesPage() {
 
       <div className="mb-6 flex flex-wrap gap-3">
         <input
-          className="w-full max-w-sm rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="w-full max-w-sm rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           placeholder="Buscar por nombre..."
           value={search}
           onChange={(e) => {
@@ -469,7 +475,7 @@ export default function CoursesPage() {
           }}
         />
         <select
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           value={categoryFilter}
           onChange={(e) => {
             setCategoryFilter(e.target.value);
@@ -485,7 +491,7 @@ export default function CoursesPage() {
         </select>
       </div>
 
-      {loading && <p className="text-sm text-slate-500">Cargando...</p>}
+      {loading && <p className="text-sm text-brand-blue-400">Cargando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {!loading && !error && (
@@ -501,7 +507,7 @@ export default function CoursesPage() {
               />
             ))}
             {filteredCourses.length === 0 && (
-              <p className="col-span-full py-10 text-center text-slate-500">
+              <p className="col-span-full py-10 text-center text-brand-blue-400">
                 {search ? "Ningún curso coincide con la búsqueda." : "No hay cursos todavía."}
               </p>
             )}
@@ -512,17 +518,17 @@ export default function CoursesPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="rounded-md border border-slate-300 px-3 py-1.5 disabled:opacity-40 dark:border-slate-700"
+                className="rounded-md border border-brand-blue-100 px-3 py-1.5 disabled:opacity-40 dark:border-brand-blue-700"
               >
                 Anterior
               </button>
-              <span className="text-slate-500">
+              <span className="text-brand-blue-400">
                 Página {currentPage} de {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-md border border-slate-300 px-3 py-1.5 disabled:opacity-40 dark:border-slate-700"
+                className="rounded-md border border-brand-blue-100 px-3 py-1.5 disabled:opacity-40 dark:border-brand-blue-700"
               >
                 Siguiente
               </button>

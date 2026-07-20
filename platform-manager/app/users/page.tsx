@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { MoodleUser } from "@/lib/moodle";
 import { PasswordInput } from "../password-input";
+import { useToast } from "../components/toast";
 
 const PAGE_SIZE = 8;
 
 function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void }) {
+  const { notify } = useToast();
   const [editing, setEditing] = useState(false);
   const [firstname, setFirstname] = useState(user.firstname);
   const [lastname, setLastname] = useState(user.lastname);
@@ -35,6 +37,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
     }
 
     setEditing(false);
+    notify(`Usuario "${user.username}" actualizado`);
     onChanged();
   }
 
@@ -47,10 +50,11 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
     const data = await response.json();
 
     if (!response.ok) {
-      alert(data.error ?? "Error al borrar el usuario");
+      notify(data.error ?? "Error al borrar el usuario", "error");
       return;
     }
 
+    notify(`Usuario "${user.username}" borrado`);
     onChanged();
   }
 
@@ -63,7 +67,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
     const data = await response.json();
 
     if (!response.ok) {
-      alert(data.error ?? "Error al cambiar el estado del usuario");
+      notify(data.error ?? "Error al cambiar el estado del usuario", "error");
       return;
     }
 
@@ -76,14 +80,14 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
         <td colSpan={7} className="px-4 py-3">
           <form onSubmit={handleSave} className="flex flex-wrap items-center gap-2">
             <input
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-2 py-1 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               value={firstname}
               onChange={(e) => setFirstname(e.target.value)}
               placeholder="Nombre"
               required
             />
             <input
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-2 py-1 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               value={lastname}
               onChange={(e) => setLastname(e.target.value)}
               placeholder="Apellidos"
@@ -91,7 +95,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
             />
             <input
               type="email"
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-2 py-1 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
@@ -100,14 +104,14 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
             <button
               type="submit"
               disabled={saving}
-              className="rounded-md bg-slate-900 px-3 py-1 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+              className="rounded-md bg-brand-blue-900 px-3 py-1 text-sm font-medium text-white hover:bg-brand-blue-800 disabled:opacity-50 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
             >
               {saving ? "Guardando..." : "Guardar"}
             </button>
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="rounded-md border border-slate-300 px-3 py-1 text-sm dark:border-slate-700"
+              className="rounded-md border border-brand-blue-100 px-3 py-1 text-sm dark:border-brand-blue-700"
             >
               Cancelar
             </button>
@@ -121,7 +125,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
   return (
     <tr>
       <td className="px-4 py-2">
-        <Link href={`/users/${user.id}`} className="text-slate-900 hover:underline dark:text-slate-100">
+        <Link href={`/users/${user.id}`} className="text-brand-blue-975 hover:underline dark:text-brand-blue-50">
           {user.username}
         </Link>
       </td>
@@ -131,11 +135,11 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
       <td className="px-4 py-2">{user.email}</td>
       <td className="px-4 py-2">
         {user.roles.length > 0 ? (
-          <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+          <span className="rounded-full bg-brand-cyan-50 px-2 py-0.5 text-xs font-medium text-brand-blue-800 dark:bg-brand-blue-900/40 dark:text-brand-cyan-300">
             {user.roles.join(", ")}
           </span>
         ) : (
-          <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+          <span className="text-xs text-brand-blue-400 dark:text-brand-blue-400">—</span>
         )}
       </td>
       <td className="px-4 py-2">
@@ -143,7 +147,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
             user.confirmed
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-              : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+              : "bg-brand-blue-100 text-brand-blue-600 dark:bg-brand-blue-800 dark:text-brand-blue-300"
           }`}
         >
           {user.confirmed ? "Sí" : "No"}
@@ -165,7 +169,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
         <div className="flex gap-2">
           <button
             onClick={() => setEditing(true)}
-            className="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+            className="text-sm text-brand-blue-500 hover:text-brand-blue-900 dark:text-brand-blue-300 dark:hover:text-brand-cyan-400"
           >
             Editar
           </button>
@@ -179,6 +183,7 @@ function UserRow({ user, onChanged }: { user: MoodleUser; onChanged: () => void 
 }
 
 export default function UsersPage() {
+  const { notify } = useToast();
   const [users, setUsers] = useState<MoodleUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -250,6 +255,7 @@ export default function UsersPage() {
       return;
     }
 
+    notify(`Usuario "${username}" creado`);
     setUsername("");
     setPassword("");
     setFirstname("");
@@ -262,18 +268,18 @@ export default function UsersPage() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Usuarios</h1>
+        <h1 className="text-2xl font-semibold text-brand-blue-975 dark:text-brand-blue-50">Usuarios</h1>
         <div className="flex gap-2">
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- file download, not page navigation */}
           <a
             href="/api/users?export=csv"
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="rounded-md border border-brand-blue-100 px-4 py-2 text-sm font-medium text-brand-blue-700 hover:bg-brand-blue-50 dark:border-brand-blue-700 dark:text-brand-blue-200 dark:hover:bg-brand-blue-900/40"
           >
             Exportar CSV
           </a>
           <button
             onClick={() => setShowForm((v) => !v)}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900"
+            className="rounded-md bg-brand-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-800 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
           >
             {showForm ? "Cancelar" : "+ Nuevo usuario"}
           </button>
@@ -283,12 +289,12 @@ export default function UsersPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="mb-8 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+          className="mb-8 rounded-xl border border-brand-blue-100 bg-white p-6 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975"
         >
-          <h2 className="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100">Crear usuario</h2>
+          <h2 className="mb-4 text-sm font-medium text-brand-blue-975 dark:text-brand-blue-50">Crear usuario</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <input
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               placeholder="Usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -296,14 +302,14 @@ export default function UsersPage() {
             />
             <PasswordInput value={password} onChange={setPassword} placeholder="Contraseña" required />
             <input
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               placeholder="Nombre"
               value={firstname}
               onChange={(e) => setFirstname(e.target.value)}
               required
             />
             <input
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
               placeholder="Apellidos"
               value={lastname}
               onChange={(e) => setLastname(e.target.value)}
@@ -311,7 +317,7 @@ export default function UsersPage() {
             />
             <input
               type="email"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 sm:col-span-2"
+              className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950 sm:col-span-2"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -322,7 +328,7 @@ export default function UsersPage() {
           <button
             type="submit"
             disabled={creating}
-            className="mt-4 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+            className="mt-4 rounded-md bg-brand-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-800 disabled:opacity-50 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
           >
             {creating ? "Creando..." : "Crear usuario"}
           </button>
@@ -330,7 +336,7 @@ export default function UsersPage() {
       )}
 
       <input
-        className="mb-6 w-full max-w-sm rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+        className="mb-6 w-full max-w-sm rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
         placeholder="Buscar por nombre, usuario o email..."
         value={search}
         onChange={(e) => {
@@ -339,13 +345,13 @@ export default function UsersPage() {
         }}
       />
 
-      {loading && <p className="text-sm text-slate-500">Cargando...</p>}
+      {loading && <p className="text-sm text-brand-blue-400">Cargando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {!loading && !error && (
         <>
-          <table className="w-full overflow-hidden rounded-lg border border-slate-200 text-left text-sm dark:border-slate-800">
-            <thead className="bg-slate-100 dark:bg-slate-800">
+          <table className="w-full overflow-hidden rounded-xl border border-brand-blue-100 text-left text-sm dark:border-brand-blue-800">
+            <thead className="bg-brand-blue-50 dark:bg-brand-blue-900/40">
               <tr>
                 <th className="px-4 py-2">Usuario</th>
                 <th className="px-4 py-2">Nombre</th>
@@ -356,13 +362,13 @@ export default function UsersPage() {
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+            <tbody className="divide-y divide-brand-blue-100 bg-white dark:divide-brand-blue-800 dark:bg-brand-blue-975">
               {pageUsers.map((user) => (
                 <UserRow key={user.id} user={user} onChanged={loadUsers} />
               ))}
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={7} className="px-4 py-6 text-center text-brand-blue-400">
                     {search ? "Ningún usuario coincide con la búsqueda." : "No hay usuarios todavía."}
                   </td>
                 </tr>
@@ -375,17 +381,17 @@ export default function UsersPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="rounded-md border border-slate-300 px-3 py-1.5 disabled:opacity-40 dark:border-slate-700"
+                className="rounded-md border border-brand-blue-100 px-3 py-1.5 disabled:opacity-40 dark:border-brand-blue-700"
               >
                 Anterior
               </button>
-              <span className="text-slate-500">
+              <span className="text-brand-blue-400">
                 Página {currentPage} de {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-md border border-slate-300 px-3 py-1.5 disabled:opacity-40 dark:border-slate-700"
+                className="rounded-md border border-brand-blue-100 px-3 py-1.5 disabled:opacity-40 dark:border-brand-blue-700"
               >
                 Siguiente
               </button>

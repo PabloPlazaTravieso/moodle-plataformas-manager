@@ -138,7 +138,7 @@ function groupByAction(entries: LogEntry[]) {
 export function ActivityCharts({ entries }: { entries: LogEntry[] }) {
   if (entries.length === 0) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-xl border border-brand-blue-100 bg-white p-6 text-sm text-brand-blue-400 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975">
         Todavía no hay actividad registrada para mostrar en gráficas.
       </div>
     );
@@ -149,17 +149,17 @@ export function ActivityCharts({ entries }: { entries: LogEntry[] }) {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100">Actividad por día</h3>
+      <div className="rounded-xl border border-brand-blue-100 bg-white p-6 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975">
+        <h3 className="mb-4 text-sm font-medium text-brand-blue-975 dark:text-brand-blue-50">Actividad por día</h3>
         <Bars data={byDay} colorFor={() => SEQUENTIAL_BLUE} />
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100">Acciones más frecuentes</h3>
+      <div className="rounded-xl border border-brand-blue-100 bg-white p-6 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975">
+        <h3 className="mb-4 text-sm font-medium text-brand-blue-975 dark:text-brand-blue-50">Acciones más frecuentes</h3>
         <Bars data={byAction} colorFor={(i) => CATEGORICAL[i % CATEGORICAL.length]} />
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
           {byAction.map((d, i) => (
-            <span key={d.label} className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+            <span key={d.label} className="flex items-center gap-1.5 text-xs text-brand-blue-600 dark:text-brand-blue-300">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: CATEGORICAL[i % CATEGORICAL.length].light }}

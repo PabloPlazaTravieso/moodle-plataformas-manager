@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import type { AssignableRole, CourseNote, EnrolledUser, MoodleUser } from "@/lib/moodle";
+import { useToast } from "../../components/toast";
 
 function NoteItem({
   note,
@@ -37,9 +38,9 @@ function NoteItem({
 
   if (editing) {
     return (
-      <li className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <li className="rounded-lg border border-brand-blue-100 bg-white p-4 dark:border-brand-blue-800 dark:bg-brand-blue-975">
         <textarea
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={3}
@@ -49,14 +50,14 @@ function NoteItem({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+            className="rounded-md bg-brand-blue-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-blue-800 disabled:opacity-50 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
           >
             {saving ? "Guardando..." : "Guardar"}
           </button>
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
+            className="rounded-md border border-brand-blue-100 px-3 py-1.5 text-sm dark:border-brand-blue-700"
           >
             Cancelar
           </button>
@@ -66,15 +67,15 @@ function NoteItem({
   }
 
   return (
-    <li className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+    <li className="flex items-start justify-between gap-3 rounded-lg border border-brand-blue-100 bg-white p-4 dark:border-brand-blue-800 dark:bg-brand-blue-975">
       <div>
-        <p className="text-sm text-slate-800 dark:text-slate-200">{note.content}</p>
-        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+        <p className="text-sm text-brand-blue-800 dark:text-brand-blue-200">{note.content}</p>
+        <p className="mt-1 text-xs text-brand-blue-400 dark:text-brand-blue-400">
           {note.userfullname} · {new Date(note.timecreated * 1000).toLocaleString()}
         </p>
       </div>
       <div className="flex shrink-0 gap-2">
-        <button onClick={() => setEditing(true)} className="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+        <button onClick={() => setEditing(true)} className="text-sm text-brand-blue-500 hover:text-brand-blue-900 dark:text-brand-blue-300 dark:hover:text-brand-cyan-400">
           Editar
         </button>
         <button onClick={() => onDelete(note.id)} className="text-sm text-red-600 hover:text-red-800">
@@ -86,6 +87,7 @@ function NoteItem({
 }
 
 export default function CourseDetailPage() {
+  const { notify } = useToast();
   const params = useParams<{ id: string }>();
   const courseId = params.id;
 
@@ -177,6 +179,7 @@ export default function CourseDetailPage() {
       return;
     }
 
+    notify(`Alumno matriculado correctamente`);
     setUserSearch("");
     await loadData();
   }
@@ -192,10 +195,11 @@ export default function CourseDetailPage() {
 
     if (!response.ok) {
       const data = await response.json();
-      alert(data.error ?? "Error al desmatricular al alumno");
+      notify(data.error ?? "Error al desmatricular al alumno", "error");
       return;
     }
 
+    notify(`${name} desmatriculado`);
     await loadData();
   }
 
@@ -231,10 +235,11 @@ export default function CourseDetailPage() {
 
     if (!response.ok) {
       const data = await response.json();
-      alert(data.error ?? "Error al borrar la nota");
+      notify(data.error ?? "Error al borrar la nota", "error");
       return;
     }
 
+    notify("Nota borrada");
     await loadData();
   }
 
@@ -305,12 +310,12 @@ export default function CourseDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+      <h1 className="mb-6 text-2xl font-semibold text-brand-blue-975 dark:text-brand-blue-50">
         Curso #{courseId}
       </h1>
 
-      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100">Imagen del curso</h2>
+      <div className="mb-8 rounded-xl border border-brand-blue-100 bg-white p-6 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975">
+        <h2 className="mb-4 text-sm font-medium text-brand-blue-975 dark:text-brand-blue-50">Imagen del curso</h2>
         <div className="flex items-center gap-6">
           {hasImage ? (
             // eslint-disable-next-line @next/next/no-img-element -- external Moodle image proxied through our own API
@@ -321,12 +326,12 @@ export default function CourseDetailPage() {
               className="h-24 w-40 rounded-md object-cover"
             />
           ) : (
-            <div className="flex h-24 w-40 items-center justify-center rounded-md bg-slate-100 text-xs text-slate-400 dark:bg-slate-800">
+            <div className="flex h-24 w-40 items-center justify-center rounded-md bg-brand-blue-50 text-xs text-brand-blue-400 dark:bg-brand-blue-900/40">
               Sin imagen
             </div>
           )}
           <div>
-            <label className="inline-block cursor-pointer rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+            <label className="inline-block cursor-pointer rounded-md border border-brand-blue-100 px-4 py-2 text-sm font-medium text-brand-blue-700 hover:bg-brand-blue-50 dark:border-brand-blue-700 dark:text-brand-blue-200 dark:hover:bg-brand-blue-900/40">
               {uploadingImage ? "Subiendo..." : "Subir imagen"}
               <input
                 type="file"
@@ -341,22 +346,22 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
-      <h2 className="mb-4 text-lg font-medium text-slate-900 dark:text-slate-100">Matriculados</h2>
+      <h2 className="mb-4 text-lg font-medium text-brand-blue-975 dark:text-brand-blue-50">Matriculados</h2>
 
       <form
         onSubmit={handleEnrol}
-        className="mb-8 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+        className="mb-8 rounded-xl border border-brand-blue-100 bg-white p-6 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975"
       >
-        <h2 className="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100">Matricular alumno</h2>
+        <h2 className="mb-4 text-sm font-medium text-brand-blue-975 dark:text-brand-blue-50">Matricular alumno</h2>
         <input
-          className="mb-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="mb-3 w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           placeholder="Buscar usuario por nombre, usuario o email..."
           value={userSearch}
           onChange={(e) => setUserSearch(e.target.value)}
         />
         <div className="flex gap-4">
           <select
-            className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="flex-1 rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
             value={effectiveSelectedUserId}
             onChange={(e) => setSelectedUserId(e.target.value)}
           >
@@ -367,7 +372,7 @@ export default function CourseDetailPage() {
             ))}
           </select>
           <select
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
             value={selectedRoleId}
             onChange={(e) => setSelectedRoleId(e.target.value)}
           >
@@ -380,26 +385,26 @@ export default function CourseDetailPage() {
           <button
             type="submit"
             disabled={enrolling || filteredUsers.length === 0}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+            className="rounded-md bg-brand-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-800 disabled:opacity-50 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
           >
             {enrolling ? "Matriculando..." : "Matricular"}
           </button>
         </div>
         {notEnrolledUsers.length === 0 && !loading && (
-          <p className="mt-3 text-sm text-slate-500">Todos los usuarios ya están matriculados en este curso.</p>
+          <p className="mt-3 text-sm text-brand-blue-400">Todos los usuarios ya están matriculados en este curso.</p>
         )}
         {notEnrolledUsers.length > 0 && filteredUsers.length === 0 && (
-          <p className="mt-3 text-sm text-slate-500">Ningún usuario coincide con la búsqueda.</p>
+          <p className="mt-3 text-sm text-brand-blue-400">Ningún usuario coincide con la búsqueda.</p>
         )}
         {formError && <p className="mt-3 text-sm text-red-600">{formError}</p>}
       </form>
 
-      {loading && <p className="text-sm text-slate-500">Cargando...</p>}
+      {loading && <p className="text-sm text-brand-blue-400">Cargando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {!loading && !error && (
-        <table className="w-full overflow-hidden rounded-lg border border-slate-200 text-left text-sm dark:border-slate-800">
-          <thead className="bg-slate-100 dark:bg-slate-800">
+        <table className="w-full overflow-hidden rounded-xl border border-brand-blue-100 text-left text-sm dark:border-brand-blue-800">
+          <thead className="bg-brand-blue-50 dark:bg-brand-blue-900/40">
             <tr>
               <th className="px-4 py-2">Nombre</th>
               <th className="px-4 py-2">Email</th>
@@ -407,7 +412,7 @@ export default function CourseDetailPage() {
               <th className="px-4 py-2"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+          <tbody className="divide-y divide-brand-blue-100 bg-white dark:divide-brand-blue-800 dark:bg-brand-blue-975">
             {enrolled.map((user) => (
               <tr key={user.id}>
                 <td className="px-4 py-2">
@@ -427,7 +432,7 @@ export default function CourseDetailPage() {
             ))}
             {enrolled.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-brand-blue-400">
                   Nadie matriculado todavía.
                 </td>
               </tr>
@@ -436,14 +441,14 @@ export default function CourseDetailPage() {
         </table>
       )}
 
-      <h2 className="mt-10 mb-4 text-lg font-medium text-slate-900 dark:text-slate-100">Notas del curso</h2>
+      <h2 className="mt-10 mb-4 text-lg font-medium text-brand-blue-975 dark:text-brand-blue-50">Notas del curso</h2>
 
       <form
         onSubmit={handleAddNote}
-        className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+        className="mb-6 rounded-xl border border-brand-blue-100 bg-white p-6 shadow-sm dark:border-brand-blue-800 dark:bg-brand-blue-975"
       >
         <textarea
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          className="w-full rounded-md border border-brand-blue-100 px-3 py-2 text-sm dark:border-brand-blue-700 dark:bg-brand-blue-950"
           placeholder="Añadir una nota sobre este curso..."
           value={newNote}
           onChange={(e) => setNewNote(e.target.value)}
@@ -454,7 +459,7 @@ export default function CourseDetailPage() {
         <button
           type="submit"
           disabled={addingNote}
-          className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+          className="mt-3 rounded-md bg-brand-blue-900 px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-800 disabled:opacity-50 dark:bg-brand-cyan-600 dark:text-brand-blue-999 dark:hover:bg-brand-cyan-500"
         >
           {addingNote ? "Guardando..." : "Añadir nota"}
         </button>
@@ -464,7 +469,7 @@ export default function CourseDetailPage() {
         {notes.map((note) => (
           <NoteItem key={note.id} note={note} onSave={handleSaveNote} onDelete={handleDeleteNote} />
         ))}
-        {notes.length === 0 && <p className="text-sm text-slate-500">No hay notas todavía.</p>}
+        {notes.length === 0 && <p className="text-sm text-brand-blue-400">No hay notas todavía.</p>}
       </ul>
     </div>
   );

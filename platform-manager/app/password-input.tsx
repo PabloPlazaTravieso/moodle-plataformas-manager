@@ -7,12 +7,16 @@ export function PasswordInput({
   onChange,
   placeholder,
   className,
+  inputClassName,
+  iconClassName,
   required,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
+  iconClassName?: string;
   required?: boolean;
 }) {
   const [visible, setVisible] = useState(false);
@@ -21,7 +25,9 @@ export function PasswordInput({
     <div className={`relative ${className ?? ""}`}>
       <input
         type={visible ? "text" : "password"}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 pr-10 text-sm dark:border-slate-700 dark:bg-slate-800"
+        className={`w-full rounded-md border px-3 py-2 pr-10 text-sm ${
+          inputClassName ?? "border-slate-300 dark:border-slate-700 dark:bg-slate-800"
+        }`}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -31,7 +37,9 @@ export function PasswordInput({
         type="button"
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-        className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+        className={`absolute inset-y-0 right-0 flex items-center px-3 ${
+          iconClassName ?? "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+        }`}
       >
         {visible ? (
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="size-5">
