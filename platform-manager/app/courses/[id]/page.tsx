@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import type { AssignableRole, CourseNote, EnrolledUser, MoodleUser } from "@/lib/moodle";
 
@@ -95,6 +95,7 @@ export default function CourseDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [userSearch, setUserSearch] = useState("");
   const [roles, setRoles] = useState<AssignableRole[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [enrolling, setEnrolling] = useState(false);
@@ -165,7 +166,7 @@ export default function CourseDetailPage() {
     const response = await fetch(`/api/courses/${courseId}/enrollments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userid: selectedUserId, roleid: selectedRoleId }),
+      body: JSON.stringify({ userid: effectiveSelectedUserId, roleid: selectedRoleId }),
     });
     const data = await response.json();
 
@@ -176,6 +177,7 @@ export default function CourseDetailPage() {
       return;
     }
 
+    setUserSearch("");
     await loadData();
   }
 
@@ -282,6 +284,25 @@ export default function CourseDetailPage() {
 
   const notEnrolledUsers = allUsers.filter((user) => !enrolled.some((e) => e.id === user.id));
 
+  const filteredUsers = useMemo(() => {
+    const term = userSearch.trim().toLowerCase();
+    if (!term) return notEnrolledUsers;
+    return notEnrolledUsers.filter(
+      (user) =>
+        user.username.toLowerCase().includes(term) ||
+        user.email.toLowerCase().includes(term) ||
+        `${user.firstname} ${user.lastname}`.toLowerCase().includes(term),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- notEnrolledUsers is derived fresh each render
+  }, [allUsers, enrolled, userSearch]);
+
+  // Derived at render time (not via effect+setState) to avoid cascading renders:
+  // falls back to the first filtered user whenever the current selection isn't
+  // (or is no longer) part of the filtered list.
+  const effectiveSelectedUserId = filteredUsers.some((u) => String(u.id) === selectedUserId)
+    ? selectedUserId
+    : String(filteredUsers[0]?.id ?? "");
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-slate-100">
@@ -327,13 +348,19 @@ export default function CourseDetailPage() {
         className="mb-8 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
       >
         <h2 className="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100">Matricular alumno</h2>
+        <input
+          className="mb-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          placeholder="Buscar usuario por nombre, usuario o email..."
+          value={userSearch}
+          onChange={(e) => setUserSearch(e.target.value)}
+        />
         <div className="flex gap-4">
           <select
             className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-            value={selectedUserId}
+            value={effectiveSelectedUserId}
             onChange={(e) => setSelectedUserId(e.target.value)}
           >
-            {notEnrolledUsers.map((user) => (
+            {filteredUsers.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.firstname} {user.lastname} ({user.username})
               </option>
@@ -352,7 +379,7 @@ export default function CourseDetailPage() {
           </select>
           <button
             type="submit"
-            disabled={enrolling || notEnrolledUsers.length === 0}
+            disabled={enrolling || filteredUsers.length === 0}
             className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
           >
             {enrolling ? "Matriculando..." : "Matricular"}
@@ -360,6 +387,9 @@ export default function CourseDetailPage() {
         </div>
         {notEnrolledUsers.length === 0 && !loading && (
           <p className="mt-3 text-sm text-slate-500">Todos los usuarios ya están matriculados en este curso.</p>
+        )}
+        {notEnrolledUsers.length > 0 && filteredUsers.length === 0 && (
+          <p className="mt-3 text-sm text-slate-500">Ningún usuario coincide con la búsqueda.</p>
         )}
         {formError && <p className="mt-3 text-sm text-red-600">{formError}</p>}
       </form>
