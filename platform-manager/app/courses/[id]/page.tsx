@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import type { AssignableRole, EnrolledUser, MoodleUser } from "@/lib/moodle";
+import type { AssignableRole, CourseNote, EnrolledUser, MoodleUser } from "@/lib/moodle";
 
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
@@ -24,18 +24,29 @@ export default function CourseDetailPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
 
+  const [notes, setNotes] = useState<CourseNote[]>([]);
+  const [newNote, setNewNote] = useState("");
+  const [addingNote, setAddingNote] = useState(false);
+  const [noteError, setNoteError] = useState<string | null>(null);
+
   async function loadData() {
     setLoading(true);
     setError(null);
 
-    const [enrolledRes, usersRes, rolesRes] = await Promise.all([
+    const [enrolledRes, usersRes, rolesRes, notesRes] = await Promise.all([
       fetch(`/api/courses/${courseId}/enrollments`),
       fetch("/api/users"),
       fetch("/api/roles"),
+      fetch(`/api/courses/${courseId}/notes`),
     ]);
     const enrolledData = await enrolledRes.json();
     const usersData = await usersRes.json();
     const rolesData = await rolesRes.json();
+    const notesData = await notesRes.json();
+
+    if (notesRes.ok) {
+      setNotes(notesData.notes);
+    }
 
     if (!enrolledRes.ok) {
       setError(enrolledData.error ?? "Error al cargar los matriculados");
@@ -99,6 +110,45 @@ export default function CourseDetailPage() {
     if (!response.ok) {
       const data = await response.json();
       alert(data.error ?? "Error al desmatricular al alumno");
+      return;
+    }
+
+    await loadData();
+  }
+
+  async function handleAddNote(event: React.FormEvent) {
+    event.preventDefault();
+    setNoteError(null);
+    setAddingNote(true);
+
+    const response = await fetch(`/api/courses/${courseId}/notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: newNote }),
+    });
+    const data = await response.json();
+
+    setAddingNote(false);
+
+    if (!response.ok) {
+      setNoteError(data.error ?? "Error al añadir la nota");
+      return;
+    }
+
+    setNewNote("");
+    await loadData();
+  }
+
+  async function handleDeleteNote(noteId: number) {
+    if (!confirm("¿Borrar esta nota?")) {
+      return;
+    }
+
+    const response = await fetch(`/api/courses/${courseId}/notes/${noteId}`, { method: "DELETE" });
+
+    if (!response.ok) {
+      const data = await response.json();
+      alert(data.error ?? "Error al borrar la nota");
       return;
     }
 
@@ -258,6 +308,53 @@ export default function CourseDetailPage() {
           </tbody>
         </table>
       )}
+
+      <h2 className="mt-10 mb-4 text-lg font-medium text-slate-900 dark:text-slate-100">Notas del curso</h2>
+
+      <form
+        onSubmit={handleAddNote}
+        className="mb-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+      >
+        <textarea
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          placeholder="Añadir una nota sobre este curso..."
+          value={newNote}
+          onChange={(e) => setNewNote(e.target.value)}
+          rows={3}
+          required
+        />
+        {noteError && <p className="mt-2 text-sm text-red-600">{noteError}</p>}
+        <button
+          type="submit"
+          disabled={addingNote}
+          className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+        >
+          {addingNote ? "Guardando..." : "Añadir nota"}
+        </button>
+      </form>
+
+      <ul className="space-y-2">
+        {notes.map((note) => (
+          <li
+            key={note.id}
+            className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div>
+              <p className="text-sm text-slate-800 dark:text-slate-200">{note.content}</p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                {note.userfullname} · {new Date(note.timecreated * 1000).toLocaleString()}
+              </p>
+            </div>
+            <button
+              onClick={() => handleDeleteNote(note.id)}
+              className="shrink-0 text-sm text-red-600 hover:text-red-800"
+            >
+              Borrar
+            </button>
+          </li>
+        ))}
+        {notes.length === 0 && <p className="text-sm text-slate-500">No hay notas todavía.</p>}
+      </ul>
     </div>
   );
 }

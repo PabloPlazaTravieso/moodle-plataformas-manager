@@ -73,6 +73,30 @@ $functions = [
         'ajax'          => false,
         'capabilities'  => 'local/miplugin:viewusers',
     ],
+    'local_miplugin_get_course_notes' => [
+        'classname'     => 'local_miplugin\external\get_course_notes',
+        'methodname'    => 'execute',
+        'description'   => 'Returns the notes attached to a course.',
+        'type'          => 'read',
+        'ajax'          => false,
+        'capabilities'  => 'local/miplugin:managenotes',
+    ],
+    'local_miplugin_add_course_note' => [
+        'classname'     => 'local_miplugin\external\add_course_note',
+        'methodname'    => 'execute',
+        'description'   => 'Adds a note to a course.',
+        'type'          => 'write',
+        'ajax'          => false,
+        'capabilities'  => 'local/miplugin:managenotes',
+    ],
+    'local_miplugin_delete_course_note' => [
+        'classname'     => 'local_miplugin\external\delete_course_note',
+        'methodname'    => 'execute',
+        'description'   => 'Deletes a course note.',
+        'type'          => 'write',
+        'ajax'          => false,
+        'capabilities'  => 'local/miplugin:managenotes',
+    ],
 ];
 
 $services = [
@@ -97,6 +121,9 @@ $services = [
             'local_miplugin_set_course_image',
             'local_miplugin_get_activity_log',
             'local_miplugin_get_assignable_roles',
+            'local_miplugin_get_course_notes',
+            'local_miplugin_add_course_note',
+            'local_miplugin_delete_course_note',
         ],
         'restrictedusers' => 0,
         'enabled'         => 1,

@@ -340,3 +340,29 @@ export async function fetchCourseImage(imageUrl: string) {
 
   return response;
 }
+
+export interface CourseNote {
+  id: number;
+  content: string;
+  userfullname: string;
+  timecreated: number;
+}
+
+export function getCourseNotes(courseId: number) {
+  return callMoodle<{ notes: CourseNote[] }>("local_miplugin_get_course_notes", {
+    courseid: courseId,
+  }).then((r) => r.notes);
+}
+
+export function addCourseNote(courseId: number, content: string) {
+  return callMoodle<{ id: number }>("local_miplugin_add_course_note", {
+    courseid: courseId,
+    content,
+  });
+}
+
+export function deleteCourseNote(noteId: number) {
+  return callMoodle<{ success: boolean }>("local_miplugin_delete_course_note", {
+    noteid: noteId,
+  });
+}
